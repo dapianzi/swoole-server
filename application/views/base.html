@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><{block name=title}><{/block}></title>
-    <!-- link type="text/css" rel="stylesheet" href="<{$BASE_URI}>/public/js/bootstrap/bootstrap.min.css" -->
     <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link type="text/css" rel="stylesheet" href="<{$BASE_URI}>/public/css/bootstrap-datepicker.min.css">
@@ -48,7 +47,7 @@
         </div>
     </div>
 </div>
-
+<{block name=content}><{/block}>
 <div class="container footer">
     <hr>
     <div class="row footer-bottom">
@@ -59,5 +58,6 @@
 </div>
 <div class="modal fade" id="commonModal" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="commonModalLabel"></div>
 <script type="text/javascript" src="<{$BASE_URI}>/public/js/comm.js"></script>
+<{block name=js}><{/block}>
 </body>
 </html>

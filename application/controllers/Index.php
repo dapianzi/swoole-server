@@ -16,7 +16,7 @@ class IndexController extends BaseController {
         if ($this->user) {
 
         }
-        $this->assign('user', '');
+        $this->getView()->assign('user', $this->user);
     }
 
 }

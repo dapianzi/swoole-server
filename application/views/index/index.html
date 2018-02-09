@@ -1,0 +1,106 @@
+<{extends 'base.html'}>
+
+<{block name=title}>Chatting room<{/block}>
+<{block name=static}>
+<style type="text/css">
+body{background: rgba(48,48,48,0.8);}
+#wrap{
+    margin-top: 50px;
+}
+.class-input{height:32px; width:240px; padding:2px 8px; line-height: 28px; border-radius: 3px; -webkit-border-radius:3px; margin:4px 2px 4px 15px; border:1px solid #CCCCCC;
+    box-shadow: 0px 0px 0px 0px red;}
+.class-send-btn{height:32px; padding:2px 12px; line-height: 28px; border-radius: 3px; -webkit-border-radius:3px; margin:4px; margin-left:0; border:1px solid #CCCCCC; background: #FFFFFF;}
+
+.title {text-shadow:  1px 1px 20px red, -1px -1px 20px red; text-align: center;}
+.back-btn{display:block; float:left; height:40px; width:0; margin-top:10px; position: relative;}
+.back-btn::before {content:''; display:block; position: absolute; top:6px; left:16px; width:24px;
+    height:24px; border-top:4px solid #FFFFFF; border-left:4px solid #FFFFFF; transform: rotate(-45deg); border-radius: 4px;}
+
+.message{}
+.message::after{content:''; display: block; height:0; width:100%; clear: both;}
+.avatar{width:36px; height:36px;  margin:5px; border-radius: 5px; border: 2px solid #DEDEDE;}
+.message-content{border-radius: 10px; margin:5px; line-height: 28px; min-height:28px; padding:5px 10px; border: 1px solid #AAA; font-size: 14px; position:relative; max-width:180px;}
+.message-a .avatar{float:left; background: #282C34;}
+.message-a .message-content{float:left; background: #FFFFFF; margin-left:10px;}
+.message-a .message-content::after{content:''; display: block; width:0px; height:0px;
+    border-right: 8px white solid;
+    border-top: 6px solid rgba(0,0,0,0);
+    border-bottom: 6px solid rgba(0,0,0,0);
+    left:-8px; top:12px; position: absolute;}
+.message-b .avatar{float:right; background: orangered;}
+.message-b .message-content{float:right; background: lightgreen; margin-right:10px;}
+.message-b .message-content::after{content:''; display: block; width:0px; height:0px;
+    border-left: 8px lightgreen solid;
+    border-top: 6px solid rgba(0,0,0,0);
+    border-bottom: 6px solid rgba(0,0,0,0);
+    right:-8px; top:12px; position: absolute;}
+
+.xxx{height:100px; width:120px; /*border-left: red 100px solid; border-top:green 150px solid; border-bottom:blue 300px solid; border-right:200px solid orange;*/
+    background: linear-gradient(to center, blue, yellow);
+}
+</style>
+<{/block}>
+<{block name=content}>
+<div id="wrap" class="container">
+    <div class="header">
+        <span class="back-btn"></span>
+        <div class="title">Dapianzi</div>
+    </div>
+    <div class="content">
+        <div id="content">
+            <div class="message message-a">
+                <div class="avatar"></div>
+                <div class="message-content">How are you?</div>
+            </div>
+            <div class="message message-b">
+                <div class="avatar"></div>
+                <div class="message-content">Fine, thank you. And you?</div>
+            </div>
+            <div class="message message-a">
+                <div class="avatar"></div>
+                <div class="message-content">I'm fine, too.</div>
+            </div>
+        </div>
+    </div>
+    <div class="footer">
+        <span class="switch-user" id="switchUser"></span>
+        <input type="text" class="class-input" name="name-input" id="id-input" value="" placeholder="Type something" />
+        <button id="sendMessage" class="class-send-btn">发送</button>
+    </div>
+</div>
+<div class="xxx"></div>
+<{/block}>
+<{block name=js}>
+<script type="text/javascript">
+    $(function(){
+        $('#sendMessage').click(function(){
+            insertContent();
+
+        });
+
+        $('#id-input').on('keyup', function(e){
+            if (13 === e.keyCode) {
+                insertContent();
+            };
+        });
+
+        function insertContent() {
+            var _html1 = $('.class-input').val();
+            if ('' === _html1) {
+                return false;
+            }
+            _html1 = _html1.replace(/\s/g, '&nbsp;');
+            //for (var i=0; i<10; i++) {
+            var cls = Math.random()>0.5 ? 'a' : 'b';
+            $('#content').append('<div class="message message-'+ cls +'"><div class="avatar"></div><div class="message-content">' + _html1 + '</div></div>');
+            //}
+            if ($('#content').height() > 520) {
+                var _scrollTop = $('#content').height() - 520;
+                $('.content').scrollTop(_scrollTop);
+            }
+            $('.class-input').val('');
+        }
+    });
+
+</script>
+<{/block}>
