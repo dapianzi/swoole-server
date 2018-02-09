@@ -1,0 +1,11 @@
+<div class="col-md-2 side-bar">
+    <h3 class="page-header">管理菜单</h3>
+    <ul class="nav">
+        <li><a href="<{$BASE_URI}>/">用户列表</a></li>
+        <{if $cas_admin.role eq 1}>
+        <li><a href="<{$BASE_URI}>/system">系统设置</a></li>
+        <{/if}>
+        <li><a href="<{$BASE_URI}>/logs">创建日志</a></li>
+        <li><a href="<{$BASE_URI}>/logout">Logout</a></li>
+    </ul>
+</div>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><{block name=title}><{/block}></title>
+    <!-- link type="text/css" rel="stylesheet" href="<{$BASE_URI}>/public/js/bootstrap/bootstrap.min.css" -->
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" href="<{$BASE_URI}>/public/css/bootstrap-datepicker.min.css">
+    <link type="text/css" rel="stylesheet" href="<{$BASE_URI}>/public/css/comm.css">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+    <script src="https://cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- Favicons -->
+    <link rel="apple-touch-icon-precomposed" href="<{$BASE_URI}>/public/imgs/favicon-touch.png">
+    <!--<link rel="shortcut icon" href="<{$BASE_URI}>/public/imgs/favicon.png">-->
+
+    <!--script type="text/javascript" src="<{$BASE_URI}>/public/js/comm/jquery.min.js"></script>
+    <script type="text/javascript" src="<{$BASE_URI}>/public/js/bootstrap/bootstrap.min.js"></script-->
+    <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="<{$BASE_URI}>/public/js/comm/bootstrap-datepicker.min.js"></script>
+    <script type="text/javascript">
+        var __BASE__ = '<{$BASE_URI}>';
+    </script>
+    <{block name=static}><{/block}>
+</head>
+<body>
+<div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <a href="<{$BASE_URI}>/" class="navbar-brand hidden-sm">Gantt Project</a>
+        </div>
+        <div class="navbar-collapse collapse" role="navigation">
+            <ul class="nav navbar-nav">
+                <li><a href="<{$BASE_URI}>/project/">公开项目</a></li>
+                <li><a href="/">Dapianzi-Carl</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right hidden-sm">
+                <li><a href="<{$BASE_URI}>/"><{$user.username|default:''}></a></li>
+                <li><a href="<{$BASE_URI}>/logout/">注销</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="container footer">
+    <hr>
+    <div class="row footer-bottom">
+        <ul class="list-inline text-center">
+            <li>Powered by Dapianzi Carl.</li><li>Since 1989.</li><li>Why so serious.</li>
+        </ul>
+    </div>
+</div>
+<div class="modal fade" id="commonModal" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="commonModalLabel"></div>
+<script type="text/javascript" src="<{$BASE_URI}>/public/js/comm.js"></script>
+</body>
+</html>
