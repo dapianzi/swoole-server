@@ -7,7 +7,7 @@
     <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link type="text/css" rel="stylesheet" href="<{$BASE_URI}>/public/css/bootstrap-datepicker.min.css">
-    <link type="text/css" rel="stylesheet" href="<{$BASE_URI}>/public/css/comm.css">
+    <link type="text/css" rel="stylesheet" href="<{$BASE_URI}>/public/css/style.css">
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="<{$BASE_URI}>/public/js/bootstrap/bootstrap.min.js"></script-->
     <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="<{$BASE_URI}>/public/js/comm/bootstrap-datepicker.min.js"></script>
+    <script type="text/javascript" src="<{$BASE_URI}>/public/js/vendor/bootstrap-datepicker.min.js"></script>
     <script type="text/javascript">
         var __BASE__ = '<{$BASE_URI}>';
     </script>
@@ -33,23 +33,45 @@
 <div class="navbar navbar-inverse navbar-fixed-top">
     <div class="container">
         <div class="navbar-header">
-            <a href="<{$BASE_URI}>/" class="navbar-brand hidden-sm">Gantt Project</a>
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Dapianzi Carl</a>
         </div>
-        <div class="navbar-collapse collapse" role="navigation">
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
-                <li><a href="<{$BASE_URI}>/project/">公开项目</a></li>
-                <li><a href="/">Dapianzi-Carl</a></li>
+                <li>
+                    <a href="/blog/">Carl's Blog</a>
+                </li>
+                <li>
+                    <a href="/pics/">Lovely pets</a>
+                </li>
+                <li>
+                    <a href="/gantt/">Coding Plan</a>
+                </li>
+                <li>
+                    <a href="/game/">Have some fun</a>
+                </li>
             </ul>
             <ul class="nav navbar-nav navbar-right hidden-sm">
-                <li><a href="<{$BASE_URI}>/"><{$user.username|default:''}></a></li>
-                <li><a href="<{$BASE_URI}>/logout/">注销</a></li>
+                <{if $user }>
+                <li><a href="<{$BASE_URI}>/account/"><{$user.username}></a></li>
+                <{else}>
+                <li><a href="<{$BASE_URI}>/login/">登录</a></li>
+                <{/if}>
             </ul>
         </div>
     </div>
 </div>
-<{block name=content}><{/block}>
-<div class="container footer">
-    <hr>
+<div class="wrap">
+    <div class="main-content">
+        <{block name=content}><{/block}>
+    </div>
+</div>
+<div class="footer">
     <div class="row footer-bottom">
         <ul class="list-inline text-center">
             <li>Powered by Dapianzi Carl.</li><li>Since 1989.</li><li>Why so serious.</li>

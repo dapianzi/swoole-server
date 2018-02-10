@@ -6,7 +6,7 @@ $serv = new swoole_server('0.0.0.0', 2327, SWOOLE_BASE, SWOOLE_SOCK_TCP);
 // set run-time params
 $serv->set(array(
     'worker_num' => 4,
-    'daemonize' => TRUE,
+    'daemonize' => FALSE,
     'backlog' => 128,
     'max_request' => 10,
     //'dispatch_mode' => 1,

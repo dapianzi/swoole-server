@@ -1,0 +1,21 @@
+/*
+
+*/
+body {
+    background-color: rgba(48,48,48,0.8);
+}
+.wrap{
+    width: 100%;
+    position: absolute;
+    top: 50px;
+    bottom: 30px;
+}
+.main-content{
+    padding: 20px 0;
+    height: 100%;
+}
+.footer {
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+}
