@@ -18,5 +18,4 @@ class LoginController extends BaseController {
         }
         $this->getView()->assign('user', $this->user);
     }
-
 }

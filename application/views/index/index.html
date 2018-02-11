@@ -76,37 +76,44 @@
 
         ini: function(){
             var self = this;
-            this.ws = new WebSocket("ws://127.0.0.1:9501");
+            this.ws = new WebSocket("ws://127.0.0.1:1988");
             this.ws.onopen = function(evt) {
                 self.wsOpen(evt);
-                self.ws_open = true;
-                if (self.ws_open) {
-                    $('#send-text').on('click', function() {
-                        var text = $('#msg-text').val();
+                $('#send-text').removeClass('disabled');
+                $('#send-text').on('click', function() {
+                    var text = $('#msg-text').val();
+                    if ('' !== text) {
+                        self.sendMsg({'type': 'text', 'body': text});
+                        $('#msg-text').val('').focus();
+                    }
+                });
+                $('#msg-text').on('keyup', function(e) {
+                    if (e.keyCode == 13) {
+                        var text = $(this).val();
                         if ('' !== text) {
                             self.sendMsg({'type': 'text', 'body': text});
-                            $('#msg-text').val('').focus();
+                            $(this).val('').focus();
                         }
-                    });
-                    $('#msg-text').on('keyup', function(e) {
-                        if (e.keyCode == 13) {
-                            var text = $(this).val();
-                            if ('' !== text) {
-                                self.sendMsg({'type': 'text', 'body': text});
-                                $(this).val('').focus();
-                            }
-                        }
-                    });
-                } else {
-                    alert('连接聊天服务器失败..');
-                    $('#send-text').addClass('disabled');
-                }
+                    }
+                });
+                self.sendMsg({
+                    'uid': 'dapianzi',
+                    'type': 'init',
+                    'code': 0,
+                    'body': 'init',
+                });
             }
+
             this.ws.onmessage = function(evt) {
                 self.wsMessage(evt);
             }
             this.ws.onclose = function(evt) {
                 self.wsClose(evt);
+                console.log('聊天服务器已断开..');
+                window.setTimeout(function(){
+                    self.ini();
+                }, 5000);
+                $('#send-text').addClass('disabled');
             }
 
         },
@@ -123,15 +130,12 @@
             //console.log(evt);
         },
         sendMsg: function(msg) {
-            msg = $.extend({'type':'', 'body':''}, msg);
-            switch (msg.type) {
-                case 'text':
-                    break;
-                case 'image':
-                    break;
-                default:
-                    console.log('Invalid msg type.');
-            }
+            msg = $.extend({
+                "uid": 'dapianzi',
+                "type": 'msg',
+                "code": 0,
+                "body": ''
+            }, msg);
             //this.ws.send(JSON.stringify(msg));
             this.ws.send(msg.body);
             this.insertMsg(msg.body, msg.type, this.uid);
