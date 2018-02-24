@@ -15,17 +15,18 @@ class Fn {
         echo '</pre>';
     }
 
-    public static function ajaxError($err='') {
-        return self::ajaxReturn(-1, $err);
+    public static function ajaxError($code=0, $err='') {
+        return self::ajaxReturn(-1, $err, $code);
     }
 
     public static function ajaxSuccess($data='') {
         return self::ajaxReturn(0, $data);
     }
 
-    public static function ajaxReturn($status, $content) {
+    public static function ajaxReturn($status, $content, $code=0) {
         header('Content-Type:application/json; charset=utf-8');
         return exit(json_encode(array(
+            'code' => $code,
             'status' => $status,
             'content' => $content
         )));

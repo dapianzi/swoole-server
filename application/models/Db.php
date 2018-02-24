@@ -8,13 +8,14 @@
  */
 class DbModel extends DbClass
 {
+    protected $conf = 'app';
     // table name
     protected $table = '';
     // primary key
     protected $pk = 'id';
 
-    public function __construct($confName = 'app') {
-
+    public function __construct() {
+        $confName = $this->conf;
         $conf = Yaf_Application::app()->getConfig()->$confName;
         parent::__construct($conf->dsn, $conf->username, $conf->password);
 

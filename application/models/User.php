@@ -7,10 +7,11 @@
  * Created by PhpStorm.
  */
 class UserModel extends DbModel {
+    protected $conf = 'user';
 
     public function getUser($username, $token=FALSE) {
         if (FALSE !== $token) {
-            $sql = 'SELECT u.username, s.expire_time FROM user u,session s WHERE token=? AND u.id=s.user_id';
+            $sql = 'SELECT u.username, s.expire_time FROM user u,session s WHERE s.token=? AND u.id=s.user_id';
             $session = $this->getRow($sql, array($token));
             if ($session && $session['username']==$username && $session['expire_time']>time()) {
                 //pass
@@ -18,7 +19,7 @@ class UserModel extends DbModel {
                 return null;
             }
         }
-        $sql = 'SELECT u.id,username,email,mobile FROM user u WHERE username=? ';
+        $sql = 'SELECT u.id,u.username,u.email,u.mobile,s.token FROM user u LEFT JOIN session s ON u.id=s.user_id WHERE username=? ';
         return $this->getRow($sql, array($username));
     }
 

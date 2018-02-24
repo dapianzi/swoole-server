@@ -1,0 +1,105 @@
+<{extends 'base.html'}>
+
+<{block name=title}>Welcome Chatting room<{/block}>
+<{block name=static}>
+<style type="text/css">
+    .login-box{
+
+    }
+    .login-box.loading{
+        display: none;
+    }
+    .login-loading{
+        line-height: 60px;
+        font-size: 20px;
+        color: #dddddd;
+        text-align: center;
+        top: 30px;
+        position: relative;
+    }
+    .login-loading::before{
+        content: '';
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        width: 20px;
+        height: 20px;
+        border-radius: 100%;
+        border-top: 5px solid #dddddd;
+        border-bottom: 5px solid #dddddd;
+        border-left: 5px solid #dddddd;
+        border-right: 5px solid rgba(0,0,0,0);
+        transform-origin: center center;
+        animation: loading 0.8s ease-out infinite;
+    }
+
+    @keyframes loading {
+        0%{transform: rotate(0deg);}
+        100%{transform: rotate(360deg);}
+    }
+</style>
+<{/block}>
+<{block name=content}>
+<div id="login-section" class="container" style="height: 100%;">
+    <div class="login-wrap col-md-4 col-md-offset-4 col-sm-6 col-sm-offset-3">
+        <div class="login-loading">正在初始化..</div>
+        <div class="login-box loading">
+            <h2 class="page-header">请先登录</h2>
+            <form class="" id="login-form" action="" method="post">
+                <input type="hidden" name="action" value="login" />
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="username" name="username" />
+                </div>
+                <div class="form-group">
+                    <input type="password" class="form-control" placeholder="password" name="password" />
+                </div>
+                <div class="form-group">
+                    <button type="button" id="btn-login" class="form-control btn-success">登录</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<{/block}>
+<{block name=js}>
+<script type="text/javascript">
+    var js_login = {
+
+        ini: function(){
+            var self = this;
+            $('#btn-login').on('click', function(){
+                self.login();
+            });
+            this.login_via_cookie();
+        },
+        login_via_cookie: function() {
+            if ($.cookie('user') !== undefined) {
+                var user = $.cookie('user'), token = $.cookie('token');
+                js_comm.ajax('<{$BASE_URI}>/login/cookie', 'user='+user+'&token='+token, function(res){
+                    // login via cookie
+                    location.href = '<{$BASE_URI}>/index';
+                }, function(res){
+                    $.removeCookie('user');
+                    $.removeCookie('token');
+                    $('.login-loading').css({"display": "none"});
+                    $('.login-box').removeClass("loading");
+                });
+            } else {
+                $('.login-loading').css({"display": "none"});
+                $('.login-box').removeClass("loading");
+            }
+        },
+        login: function(){
+            js_comm.ajax_form('#login-form', '', function(res){
+                $.cookie('user', res.content.user);
+                $.cookie('token', res.content.token);
+                location.href = '<{$BASE_URI}>/index';
+            });
+        }
+    };
+    $(function(){
+        js_login.ini();
+    });
+
+</script>
+<{/block}>

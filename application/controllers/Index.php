@@ -9,8 +9,6 @@
 
 class IndexController extends BaseController {
 
-    protected $auth = FALSE;
-
     public function indexAction() {
 
         if ($this->user) {
