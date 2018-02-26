@@ -44,6 +44,9 @@ class BaseController extends Yaf_Controller_Abstract
                 $this->user = $userModel->getUser($_SESSION['user']);
             } else if (isset($_COOKIE['user']) && isset($_COOKIE['token'])) {
                 $this->user = $userModel->getUser($_COOKIE['user'], $_COOKIE['token']);
+                if ($this->user) {
+                    $_SESSION['user'] = $this->user['username'];
+                }
             }
             if (empty($this->user)) {
                 if ($this->is_ajax) {

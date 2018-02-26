@@ -11,10 +11,14 @@ class UserModel extends DbModel {
 
     public function getUser($username, $token=FALSE) {
         if (FALSE !== $token) {
-            $sql = 'SELECT u.username, s.expire_time FROM user u,session s WHERE s.token=? AND u.id=s.user_id';
+            $sql = 'SELECT s.id,u.username, s.expire_time FROM user u,session s WHERE s.token=? AND u.id=s.user_id';
             $session = $this->getRow($sql, array($token));
-            if ($session && $session['username']==$username && $session['expire_time']>time()) {
-                //pass
+            if ($session && $session['username']==$username) {
+                if ($session['expire_time'] <= time()) {
+                    // session expired
+                    $this->delete('session', array('id'=>$session['id']));
+                    return null;
+                }
             } else {
                 return null;
             }
@@ -30,5 +34,14 @@ class UserModel extends DbModel {
         } else {
             return FALSE;
         }
+    }
+
+    public function saveUserToken($uid, $token, $expire=30) {
+        $data = array(
+            'user_id' => $uid,
+            'token' => $token,
+            'expire_time' => time()+$expire*86400,
+        );
+        $this->insert('session', $data);
     }
 }

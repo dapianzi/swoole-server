@@ -74,4 +74,8 @@ class Fn {
         return $cip;
     }
 
+
+    public static function uuid($str='') {
+        return md5(uniqid().$str);
+    }
 }
