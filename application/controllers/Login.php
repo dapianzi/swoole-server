@@ -71,7 +71,12 @@ class LoginController extends BaseController {
                     'salt' => $salt,
                     'password' => $auth->encrypt($salt)
                 );
-                $user_model->add($data);
+                $uid = $user_model->add($data);
+                // user profiles
+                $avatar = $this->getPost('avatar', '1');
+                $user_model->setUserProfile($uid, array(
+                    'avatar' => (new AvatarModel())->getAvatar($avatar),
+                ));
                 Fn::ajaxSuccess($username);
             }
         }
@@ -88,6 +93,7 @@ class LoginController extends BaseController {
         // clear cookies
         setcookie('user', '', time()-3600);
         setcookie('token', '', time()-3600);
+        (new UserModel())->clearSession($this->user['id'], $_COOKIE['token']);
         $this->redirect($this->base_uri.'/');
         return FALSE;
     }

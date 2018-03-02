@@ -38,16 +38,16 @@ class BaseController extends Yaf_Controller_Abstract
         $this->getView()->assign('csrf_input', $this->_csrf());
 
         // init user
-        if ($this->auth) {
-            $userModel = new UserModel();
-            if (isset($_SESSION['user'])) {
-                $this->user = $userModel->getUser($_SESSION['user']);
-            } else if (isset($_COOKIE['user']) && isset($_COOKIE['token'])) {
-                $this->user = $userModel->getUser($_COOKIE['user'], $_COOKIE['token']);
-                if ($this->user) {
-                    $_SESSION['user'] = $this->user['username'];
-                }
+        $userModel = new UserModel();
+        if (isset($_SESSION['user'])) {
+            $this->user = $userModel->getUser($_SESSION['user']);
+        } else if (isset($_COOKIE['user']) && isset($_COOKIE['token'])) {
+            $this->user = $userModel->getUser($_COOKIE['user'], $_COOKIE['token']);
+            if ($this->user) {
+                $_SESSION['user'] = $this->user['username'];
             }
+        }
+        if ($this->auth) {
             if (empty($this->user)) {
                 if ($this->is_ajax) {
                     Fn::ajaxError('Invalid User. Please login first.');

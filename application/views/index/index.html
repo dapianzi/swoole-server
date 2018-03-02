@@ -15,7 +15,7 @@
     .message::after{content:''; display: block; height:0; width:100%; clear: both;}
     .avatar{width:36px; height:36px;  margin:5px; border-radius: 5px; border: 2px solid #DEDEDE;}
     .message-content{border-radius: 6px; margin:5px; line-height: 28px; min-height:28px; padding:2px 10px; font-size: 14px; position:relative; max-width:60%;}
-    .message-other .avatar{float:left; background: #282C34;}
+    .message-other .avatar{float:left; background: #282C34; background-repeat: no-repeat; background-size: contain; background-position: center center;}
     .message-other .message-content{float:left; background: #FFFFFF; margin-left:10px;}
     .message-other .message-content::after{content:''; display: block; width:0px; height:0px;
         border-right: 8px white solid;
@@ -23,7 +23,7 @@
         border-bottom: 6px solid rgba(0,0,0,0);
         left:-8px; top:8px; position: absolute;
     }
-    .message-mine .avatar{float:right; background: orangered;}
+    .message-mine .avatar{float:right; background: orangered; background-repeat: no-repeat; background-size: contain; background-position: center center;}
     .message-mine .message-content{float:right; background: lightgreen; margin-right:10px;}
     .message-mine .message-content::after{content:''; display: block; width:0px; height:0px;
         border-left: 8px lightgreen solid;
@@ -40,18 +40,7 @@
     </div>
     <div class="right-content col-md-9">
         <div id="message-container">
-            <div class="message message-other">
-                <div class="avatar"></div>
-                <div class="message-content">How are you?</div>
-            </div>
-            <div class="message message-mine">
-                <div class="avatar"></div>
-                <div class="message-content">Fine, thank you. And you?</div>
-            </div>
-            <div class="message message-other">
-                <div class="avatar"></div>
-                <div class="message-content">I'm fine, too.</div>
-            </div>
+
         </div>
         <div id="message-sender">
             <div class="input-group">
@@ -69,10 +58,27 @@
 <{/block}>
 <{block name=js}>
 <script type="text/javascript">
+    var user = <{$user|json_encode}>;
+    var users = {
+        "1": {
+            "name": 'carl',
+            "avatar": '<{$BASE_URI}>/data/default/avatar_7.jpg',
+        },
+        "2": {
+            "name": 'dapianzi',
+            "avatar": '<{$BASE_URI}>/data/default/avatar_3.jpg',
+        },
+    }
     var js_chat = {
         ws: null,
         ws_open: false,
-        uid: <{$user.id}>,
+        ws_type: {
+            'CHAT_INIT': 1,
+            'CHAT_CREATE': 2,
+            'CHAT_ADDUSER': 4,
+            'CHAT_HISTORY': 3,
+            'CHAT_MESSAGE': 5,
+        },
 
         ini: function(){
             var self = this;
@@ -83,7 +89,7 @@
                 $('#send-text').on('click', function() {
                     var text = $('#msg-text').val();
                     if ('' !== text) {
-                        self.sendMsg({'type': 'text', 'body': text});
+                        self.sendMsg({'type': 'text', 'content': text});
                         $('#msg-text').val('').focus();
                     }
                 });
@@ -97,10 +103,10 @@
                     }
                 });
                 self.sendMsg({
-                    'uid': 'dapianzi',
+                    'sender': user.id,
                     'type': 'init',
                     'code': 0,
-                    'body': 'init',
+                    'content': 'init',
                 });
             }
 
@@ -122,8 +128,8 @@
             //console.log(evt);
         },
         wsMessage: function(evt) {
-            //console.log(evt);
-            this.insertMsg(evt.data);
+            console.log(evt.data);
+            this.insertMsg(JSON.parse(evt.data));
         },
         wsClose: function(evt) {
             console.log('Connection closed.');
@@ -131,25 +137,35 @@
         },
         sendMsg: function(msg) {
             msg = $.extend({
-                "uid": 'dapianzi',
-                "type": 'msg',
+                "sender": user.id,
+                "type": 'text',
                 "code": 0,
-                "body": ''
+                "content": ''
             }, msg);
-            //this.ws.send(JSON.stringify(msg));
-            this.ws.send(msg.body);
-            this.insertMsg(msg.body, msg.type, this.uid);
+            this.ws.send(JSON.stringify(msg));
+            if (msg.type != 'init') {
+                this.insertMsg(msg);
+            }
         },
-        insertMsg: function(content, type, sender) {
-            content = content.replace(/\\n/g, '<br />');
-            var cls = sender==this.uid ? 'mine' : 'other';
-            $('#message-container').append('<div class="message message-'+ cls +'"><div class="avatar"></div>' +
-                    '<div class="message-content message-'+ type +'">' + content + '</div></div>');
+        insertMsg: function(msg) {
+            var content = msg.content.replace(/\\n/g, '<br />');
+            var cls = msg.sender==user.id ? 'mine' : 'other';
+            $('#message-container').append('<div class="message message-'+ cls +'"><div class="avatar" style="background-image:url('+
+                    users[msg.sender].avatar+');"></div>' + '<div class="message-content message-'+ msg.type +'">' + content + '</div></div>');
             $('#message-container').scrollTop($('#message-container').height() - $('.right-content').height());
         }
     }
     $(function(){
         js_chat.ini();
+        var history = [
+            {"uuid": 1, "type": "msg", "sender": "1", "content": "How are you?"},
+            {"uuid": 2, "type": "msg", "sender": "2", "content": "Not good, or I should say very bad."},
+            {"uuid": 3, "type": "msg", "sender": "1", "content": "What is wrong?"},
+            {"uuid": 4, "type": "msg", "sender": "2", "content": "She's gone."},
+        ]
+        for (var i in history) {
+            js_chat.insertMsg(history[i]);
+        }
     });
 
 </script>

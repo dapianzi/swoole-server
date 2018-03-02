@@ -2,8 +2,13 @@
  * Created by KF on 2018-02-10.
  */
 js_comm = {
-    alert: function(s){
+    alert: function(s) {
         alert(s);
+    },
+    confirm: function(s, cb) {
+        if (confirm(s)) {
+            cb && cb();
+        }
     },
     ajax_running: 0,
     ajax: function(url, data, ok_call, err_call) {
@@ -55,9 +60,7 @@ js_comm = {
     },
     handle_ajax_json_res: function(res, ok_call, err_call) {
         if (res.status === 0) {
-            if (ok_call) {
-                ok_call(res);
-            }
+            ok_call && ok_call(res);
         } else {
             if (err_call) {
                 err_call(res)
@@ -65,7 +68,7 @@ js_comm = {
                 switch (res.code) {
                     case 0:
                     default:
-                        alert('错误代码：'+res.code+'; 错误信息：'+res.content);
+                        alert('Code: ' + res.code + '; Msg: ' + res.content);
                 }
             }
         }

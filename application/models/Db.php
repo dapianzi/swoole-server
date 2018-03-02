@@ -21,7 +21,7 @@ class DbModel extends DbClass
 
         //todo: auto fix table name
         if (empty($this->table)) {
-            $this->table = strtolower(str_replace('Model', '', __CLASS__));
+            $this->table = strtolower(str_replace('Model', '', get_class($this)));
         }
     }
 

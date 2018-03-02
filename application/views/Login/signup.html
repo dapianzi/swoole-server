@@ -1,0 +1,126 @@
+<{extends 'base.html'}>
+
+<{block name=title}>Welcome Chatting room<{/block}>
+<{block name=static}>
+<style type="text/css">
+.avatar-list{
+    margin: 0;
+    padding: 0;
+}
+.avatar-list::after{
+    width:100%;
+    height:0;
+    content: '';
+    display: block;
+    clear: both;
+}
+.avatar-item{
+    display: block;
+    float: left;
+    width: 60px;
+    height: 60px;
+    margin: 5px 10px;
+    border: 2px solid #898989;
+    background-color: #FFFFFF;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;
+    opacity: 0.8;
+
+}
+.avatar-item label{
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+.avatar-item.checked{
+    border-color: orangered;
+    opacity: 1;
+
+}
+    .avatar-item label input{
+        opacity: 0;
+    }
+</style>
+<{/block}>
+<{block name=content}>
+<div id="login-section" class="container" style="height: 100%;">
+    <div class="login-wrap col-md-4 col-md-offset-4 col-sm-6 col-sm-offset-3">
+        <div class="login-box loading">
+            <h2 class="page-header">创建账号</h2>
+            <form class="" id="signup-form" action="" method="post">
+                <input type="hidden" name="action" value="signup" />
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="username" name="username" />
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="mobile" name="mobile" />
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="email" name="email" />
+                </div>
+                <div class="form-group">
+                    <input type="password" class="form-control" placeholder="password" name="password" />
+                </div>
+                <div class="form-group">
+                    <input type="password" class="form-control" placeholder="confirm password" name="repassword" />
+                </div>
+                <div class="form-group">
+                    <label>chose a avatar</label>
+                    <ul class="avatar-list">
+                        <{foreach $avatars as $a}>
+                        <li class="avatar-item" style="background-image:url(<{$BASE_URI}><{$a.avatar_url}>);"><label><input type="radio" name="avatar" value="<{$a.avatar_hash}>"/></label></li>
+                        <{/foreach}>
+                    </ul>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 form-group">
+                        <a href="javascript:alert('重新注册一个吧^_^');" class="form-control btn-warning text-center">忘记密码</a>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <button type="button" id="btn-signup" class="form-control btn-success">注册</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<{/block}>
+<{block name=js}>
+<script type="text/javascript">
+    var js_signup = {
+
+        ini: function(){
+            var self = this;
+            $('#btn-signup').on('click', function(){
+                self.signup();
+            });
+            $('.avatar-item label input').on('change', function() {
+                if ($(this).prop('checked')) {
+                    $(this).parents('.avatar-item').addClass('checked').siblings('.checked').removeClass('checked');
+                } else {
+                    $(this).parents('.avatar-item').removeClass('checked');
+                }
+            })
+        },
+        signup: function() {
+            if ($('input[name="username"]').val() === '') {
+                js_comm.alert('用户名不能为空');
+            } else if ($('input[name="password"]').val() !== $('input[name="repassword"]').val()) {
+                js_comm.alert('确认密码不一致');
+            } else {
+                js_comm.ajax_form('#signup-form', '', function(){
+                    js_comm.confirm('现在登录？', function() {
+                        location.href = '<{$BASE_URI}>/login';
+                    });
+                });
+            }
+        },
+    };
+    $(function(){
+        js_signup.ini();
+    });
+
+</script>
+<{/block}>

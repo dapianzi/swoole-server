@@ -23,7 +23,9 @@ class UserModel extends DbModel {
                 return null;
             }
         }
-        $sql = 'SELECT u.id,u.username,u.email,u.mobile,s.token FROM user u LEFT JOIN session s ON u.id=s.user_id WHERE username=? ';
+        $sql = 'SELECT u.id,u.username,u.email,u.mobile,s.token,p.avatar ';
+        $sql.= ' FROM user u LEFT JOIN session s ON u.id=s.user_id ';
+        $sql.= ' LEFT JOIN user_profile p ON u.id=p.user_id WHERE username=? ';
         return $this->getRow($sql, array($username));
     }
 
@@ -43,5 +45,23 @@ class UserModel extends DbModel {
             'expire_time' => time()+$expire*86400,
         );
         $this->insert('session', $data);
+    }
+
+    public function clearSession($uid, $token) {
+        $where = array(
+            'user_id' => $uid,
+            'token' => $token,
+        );
+        $this->delete('session', $where);
+    }
+
+    public function setUserProfile($uid, $profiles) {
+        // avatar
+        $id = $this->getColumn("SELECT id FROM user_profile WHERE user_id=?", 0, array($uid));
+        if ($id > 0) {
+            $this->update('user_profile', $profiles, array('id' => $id));
+        } else {
+            $this->insert('user_profile', array_merge($profiles, array('user_id' => $uid)));
+        }
     }
 }
