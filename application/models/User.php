@@ -23,7 +23,7 @@ class UserModel extends DbModel {
                 return null;
             }
         }
-        $sql = 'SELECT u.id,u.username,u.email,u.mobile,s.token,p.avatar ';
+        $sql = ' SELECT u.id,u.username,u.email,u.mobile,p.avatar ';
         $sql.= ' FROM user u LEFT JOIN session s ON u.id=s.user_id ';
         $sql.= ' LEFT JOIN user_profile p ON u.id=p.user_id WHERE username=? ';
         return $this->getRow($sql, array($username));

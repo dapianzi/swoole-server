@@ -25,6 +25,15 @@ class DbModel extends DbClass
         }
     }
 
+    public function all($where=array()) {
+        if ($where) {
+            $where_case = $this->makeWhereSQL($where, 'AND');
+            return $this->getAll("SELECT * FROM {$this->table} WHERE {$where_case}", array_values($where));
+        } else {
+            return $this->getAll("SELECT * FROM {$this->table}");
+        }
+    }
+
     public function get($id) {
         return $this->getRow("SELECT * FROM {$this->table} WHERE {$this->pk}=?", array($id));
     }
