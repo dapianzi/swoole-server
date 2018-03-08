@@ -165,7 +165,8 @@
         insertMsg: function(msg) {
             var content = msg.content.replace(/\\n/g, '<br />');
             var cls = msg.user_id==user.id ? 'mine' : 'other';
-            $('.chat-container.current').append('<div class="message message-'+ cls +'"><div class="avatar" style="background-image:url('+
+            var chat_id = msg.chat_id;
+            $('.chat-container[data-chat="'+chat_id+'"]').append('<div class="message message-'+ cls +'"><div class="avatar" style="background-image:url('+
                     users[msg.user_id].avatar+');"></div>' + '<div class="message-content message-'+ (msg.content_type||'') +'">' + content + '</div></div>');
             $('.chat-container.current').scrollTop($('#message-container').height() - $('.right-content').height());
         },
@@ -184,17 +185,18 @@
             $('#send-text').on('click', function() {
                 var text = $('#msg-text').val();
                 if ('' !== text) {
-                    self.sendMsg({'type': 'text', 'content': text});
+                    self.sendMsg({
+                        "type": self.ws_type.CHAT_MESSAGE,
+                        "chat_id": $('.chat-container.current').data('chat'),
+                        "content": text,
+                        "content_type": "text"
+                    });
                     $('#msg-text').val('').focus();
                 }
             });
             $('#msg-text').on('keyup', function(e) {
                 if (e.keyCode == 13) {
-                    var text = $(this).val();
-                    if ('' !== text) {
-                        self.sendMsg({'type': self.ws_type.CHAT_MESSAGE, 'content': text, 'content_type':'text'});
-                        $(this).val('').focus();
-                    }
+                    $('#send-text').trigger('click');
                 }
             });
             $('.contact').on('click', function() {

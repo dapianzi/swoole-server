@@ -169,7 +169,6 @@ class class_swoole_websocket_server {
                 case CHAT_MESSAGE:
                     // try to send message if user is online
                     $chat_id = $data['chat_id'];
-                    $chat_type = $data['chat_type'];
                     $chat_info = json_decode($serv->redis->hGet('chat_group', $chat_id), TRUE);
                     $messages = array();
                     foreach ($chat_info['users'] as $user) {
@@ -259,22 +258,22 @@ class class_swoole_websocket_server {
 
                 break;
             case 'create_chat':
-                $chat_id = $this->server->db['app']->getColumn("SELECT id FROM chat_group WHERE create_user_id=? AND users=?", 0, array(
+                $chat_id = $serv->db['app']->getColumn("SELECT id FROM chat_group WHERE create_user_id=? AND users=?", 0, array(
                     $user_id,
                     implode(',', $data['users']),
                 ));
                 if (!$chat_id) {
-                    $chat_id = $this->server->db['app']->insert('chat_group', array(
+                    $chat_id = $serv->db['app']->insert('chat_group', array(
                         'type' => 1,
                         'topic' => '',
                         'create_user_id' => $user_id,
                         'users' => implode(',', $data['users']),
                     ));
                     foreach ($data['users'] as $u) {
-                        $this->server->db['app']->insert('chat_group_user', array('group_id'=>$chat_id, 'user_id'=>$u));
+                        $serv->db['app']->insert('chat_group_user', array('group_id'=>$chat_id, 'user_id'=>$u));
                     }
                 }
-                $this->server->redis->hSet('chat_group', $chat_id, json_encode(array(
+                $serv->redis->hSet('chat_group', $chat_id, json_encode(array(
                     'type' => 1,
                     'users' => $data['users'],
                 )));
@@ -286,7 +285,7 @@ class class_swoole_websocket_server {
             case 'save_message':
                 $result = [];
                 foreach ($data['messages'] as $msg_data) {
-                    $data = array(
+                    $msg = array(
                         'user_id' => $msg_data['user_id'],
                         'group_id' => $msg_data['chat_id'],
                         'status' => $msg_data['status'],
@@ -297,7 +296,7 @@ class class_swoole_websocket_server {
                             'content_type' => $msg_data['content_type'],
                         )),
                     );
-                    $result[] = $this->db->insert('chat_message', $data);
+                    $result[] = $serv->db['app']->insert('chat_messages', $msg);
                 }
                 break;
         }
