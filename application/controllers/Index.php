@@ -9,6 +9,7 @@
 
 class IndexController extends BaseController {
 
+    protected $auth = FALSE;
 
     public function indexAction() {
         $this->getView()->display('games/pinball.html');
