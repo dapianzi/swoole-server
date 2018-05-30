@@ -9,11 +9,10 @@
 
 class IndexController extends BaseController {
 
-    public function indexAction() {
-        $users = (new UserModel())->getAll("SELECT u.id,username,avatar FROM user u LEFT JOIN user_profile p ON u.id=p.user_id");
 
-        $this->getView()->assign('user', $this->user);
-        $this->getView()->assign('users', $users);
+    public function indexAction() {
+        $this->getView()->display('games/pinball.html');
+        return FALSE;
     }
 
 }

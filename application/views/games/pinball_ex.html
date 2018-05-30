@@ -1,0 +1,279 @@
+<{extends '../base.html'}>
+
+<{block name=title}>PinBall -- Faked By Carl<{/block}>
+
+<{block name=static}>
+<style type="text/css">
+    body{background-color: #EEEEEE; padding:0; margin:0;}
+    .container{
+        margin-top:0; margin-bottom: 0; padding:0;
+        margin-left:auto; margin-right: auto;
+        background-color: #FFFFFF;
+    }
+</style>
+<{/block}>
+
+<{block name=content}>
+<div id="container" class="container"></div>
+<{/block}>
+<{block name=nav}><{/block}>
+<{block name=footer}><{/block}>
+<{block name=js}>
+<script type="text/javascript" src="/js/game/utils.js"></script>
+<script type="text/javascript">
+    function formatter(num) {
+        if (num < 16) {
+            return '0' + num.toString(16);
+        }
+        return num.toString(16);
+    }
+    function calColor(points) {
+        let r = 249, g = 38, b = 14;
+        if (points < 100) {
+            r = 123 + Math.floor(1.26*points);
+            g = 198 - Math.floor(1.6*points);
+            b = 82 - Math.floor(points*0.66);
+        }
+        let c = '#' + formatter(r) + formatter(g) + formatter(b);
+        return c;
+    }
+
+    class Shape {
+        constructor(x, y, rad, color) {
+            this.x = x;
+            this.y = y;
+            this.radius = rad;
+            this.color = color;
+            this.peak = [];
+            this.origin = new Pos(x, y);
+        }
+        rotate(deg) {
+            for (let p of this.peak) {
+                p.rotate(deg);
+            }
+            return this;
+        }
+        translate(x, y) {
+            for (let p of this.peak) {
+                p.translate(x, y);
+            }
+            return this;
+        }
+        scale(x) {
+            for (let p of this.peak) {
+                p.scale(x);
+            }
+            return this;
+        }
+        draw(ctx) {
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            for (let i in this.peak) {
+                let p = new Pos(this.peak[i].x, this.peak[i].y).translate(this.x, this.y);
+                if (i === 0) {
+                    ctx.moveTo(p.x, p.y);
+                } else {
+                    ctx.lineTo(p.x, p.y);
+                }
+            }
+            ctx.closePath();
+            ctx.fill();
+        }
+    }
+    class Square extends Shape {
+        constructor(x, y, rad, color) {
+            super(...arguments);
+            this.peak = [
+                new Pos(-this.radius, -this.radius),
+                new Pos(this.radius, -this.radius),
+                new Pos(this.radius, this.radius),
+                new Pos(-this.radius, this.radius),
+            ];
+        }
+    }
+    class Circle extends Shape {
+        constructor(x, y, rad, color) {
+            super(...arguments);
+            this.peak = [];
+        }
+        scale(x) {
+            this.radius *= x;
+            return this;
+        }
+        translate(x, y) {
+            this.x += x;
+            this.y += y;
+            return this;
+        }
+        draw(ctx) {
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, 2*Math.PI);
+            ctx.fill();
+        }
+    }
+    class Triangle extends Shape {
+        constructor(x, y, rad, color) {
+            super(...arguments);
+            this.peak = [
+                new Pos(0, -this.radius),
+                new Pos(this.radius*1.732/2, this.radius/2),
+                new Pos(-this.radius*1.732/2, this.radius/2)
+            ];
+        }
+    }
+    class Ball {
+        constructor(x, y, vx, vy) {
+            this.x = x;
+            this.y = y;
+            this.vx = vx;
+            this.vy = vy;
+            this.status = 0;
+            this.weight = 1;
+            this.shape = new Circle(x, y, 20, '#FFFFFF');
+        }
+        update(ctx) {
+            if (this.status == 0) {
+
+                this.x += this.vx;
+                this.y += this.vy;
+                let _r = this.shape.radius;
+                if (this.x > _w-_r) {
+                    this.x = 2*(_w-_r) - this.x;
+                    this.vx = -this.vx*energyCost;
+                } else if (this.x < _r) {
+                    this.x = _r*2 - this.x;
+                    this.vx = -this.vx*energyCost;
+                }
+                if (this.y > _h-_r) {
+                    let tmp = 2*(_h-_r) - this.y;
+                    if (tmp < this.y-this.vy) {
+                        this.y = this.y/2;
+                    }
+                    if (Math.abs(this.vy)<=5) {
+                        this.y = _h-_r;
+                        this.vy = 0;
+                        this.status = 1;
+                    } else {
+                        this.y = tmp;
+                        this.vy = -this.vy*energyCost;
+                    }
+                }
+                this.vy += gravity;
+                this.vx = minusFriction(this.vx, friction);
+                this.vy = minusFriction(this.vy, friction);
+            }
+            this.draw(ctx);
+        }
+        draw(ctx) {
+            this.shape.x = this.x;
+            this.shape.y = this.y;
+            this.shape.radius = this.weight > 1 ? 15 : 12;
+            this.shape.color = this.status > 0 ? '#FFFF00' : '#FFFFFF';
+            this.shape.draw(ctx);
+        }
+    }
+    class Obstacle {
+        constructor(shape, x, y, num) {
+            this.x = x;
+            this.y = y;
+            this.num = num;
+            this.alive = 1;
+            switch (shape) {
+                case 't':
+                    this.shape = new Triangle(x, y, 24, '#FFFFFF');
+                    break;
+                case 's':
+                    this.shape = new Square(x, y, 18, '#FFFFFF');
+                    break;
+                case 'c':
+                    this.shape = new Circle(x, y, 20, '#FFFFFF');
+                    break;
+            }
+
+        }
+        update(ctx) {
+            if (this.alive == 1) {
+                this.draw(ctx);
+            }
+        }
+        draw(ctx) {
+            this.shape.x = this.x;
+            this.shape.y = this.y;
+            this.shape.color = calColor(this.num);
+            this.shape.draw(ctx);
+        }
+    }
+    class PinBall {
+        constructor() {
+            this.balls = [];
+            this.shapes = [];
+            this.level = 1;
+            this.pinning = false;
+            this.init();
+        }
+        init() {
+            // this.shapes.push(new Triangle(100, 100, 24, '#FF0000').rotate(45).scale(3));
+            // this.shapes.push(new Circle(250, 150, 20, '#00FF00').scale(2));
+            // this.shapes.push(new Square(350, 140, 18, '#0000FF').rotate(60));
+            for (var i=0; i<10; i++) {
+                this.balls.push(new Ball(utils.rand(20, _w-20), utils.rand(20, (_h-20)/2), utils.rand(-50, 50), 0));
+            }
+            for (var i=0; i<5; i++) {
+                let s = ['s', 't', 'c'][Math.floor(Math.random()*3)];
+                this.shapes.push(new Obstacle(s, utils.rand(20, _w-20), _h - 50, utils.rand(1,100)));
+            }
+        }
+        update(ctx) {
+            for(let i of this.shapes) {
+                for (let b of this.balls) {
+                    // collision detected
+                    const x = i.x - b.x;
+                    const y = i.y - b.y;
+                    const r = i.radius + b.radius;
+                    if (x*x + y*y <= r*r) {
+                        //
+                        let l = i.shape.peak.length;
+                        for (let j=0; j<l; j++) {
+                            i.shape.peak[j], i.shape.peak[j+1]
+                        }
+
+                    }
+
+                }
+
+                i.update(ctx);
+            }
+            for(let i of this.balls) {
+                i.update(ctx);
+            }
+        }
+        die() {
+
+        }
+        nextLevel() {
+
+        }
+
+    }
+    function minusFriction(v, f) {
+        return v*(100-f)/100;
+    }
+    let gravity = 2;
+    let friction = 1;
+    let energyCost = 0.9;
+    let cvs = utils.initCanvasContainer('container', 600, 800);
+    let ctx = cvs.getContext('2d');
+    let _w = cvs.width;
+    let _h = cvs.height;
+    (function() {
+        let pinball = new PinBall();
+        function animate() {
+            requestAnimationFrame(animate);
+            ctx.clearRect(0, 0, _w, _h);
+            pinball.update(ctx);
+        }
+        animate();
+    })();
+</script>
+<{/block}>

@@ -4,33 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><{block name=title}><{/block}></title>
-    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <link type="text/css" rel="stylesheet" href="<{$BASE_URI}>/public/css/bootstrap-datepicker.min.css">
-    <link type="text/css" rel="stylesheet" href="<{$BASE_URI}>/public/css/style.css">
+    <!--<link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">-->
+    <!--<link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">-->
+    <!--<link type="text/css" rel="stylesheet" href="/css/bootstrap-datepicker.min.css">-->
+    <!--<link type="text/css" rel="stylesheet" href="/css/style.css">-->
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
-    <script src="https://cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-    <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
+    <!--<script src="https://cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>-->
+    <!--<script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>-->
+    <!--<![endif]&ndash;&gt;-->
 
     <!-- Favicons -->
-    <link rel="apple-touch-icon-precomposed" href="<{$BASE_URI}>/public/imgs/favicon-touch.png">
-    <!--<link rel="shortcut icon" href="<{$BASE_URI}>/public/imgs/favicon.png">-->
+    <link rel="apple-touch-icon-precomposed" href="/imgs/favicon-touch.png">
 
-    <!--script type="text/javascript" src="<{$BASE_URI}>/public/js/comm/jquery.min.js"></script>
-    <script type="text/javascript" src="<{$BASE_URI}>/public/js/bootstrap/bootstrap.min.js"></script-->
     <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
-    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <script src="https://cdn.bootcss.com/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
-    <script type="text/javascript" src="<{$BASE_URI}>/public/js/vendor/bootstrap-datepicker.min.js"></script>
-    <script type="text/javascript">
-        var __BASE__ = '<{$BASE_URI}>';
-    </script>
+    <!--<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>-->
+    <!--<script src="https://cdn.bootcss.com/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>-->
+    <!--<script type="text/javascript" src="/js/vendor/bootstrap-datepicker.min.js"></script>-->
     <{block name=static}><{/block}>
 </head>
 <body>
+<{block name=nav}>
 <div class="navbar navbar-inverse navbar-fixed-top">
     <div class="container">
         <div class="navbar-header">
@@ -58,20 +53,24 @@
                 </li>
             </ul>
             <ul class="nav navbar-nav navbar-right hidden-sm">
-                <{if $user }>
-                <li><a href="<{$BASE_URI}>/account/"><{$user.username}></a></li>
+                <{if isset($user) }>
+                <li><a href="/account/"><{$user.username}></a></li>
                 <{else}>
-                <li><a href="<{$BASE_URI}>/login/">登录</a></li>
+                <li><a href="/login/">登录</a></li>
                 <{/if}>
             </ul>
         </div>
     </div>
 </div>
+<{/block}>
+<{block name=content}>
 <div class="wrap">
     <div class="main-content">
-        <{block name=content}><{/block}>
+
     </div>
 </div>
+<{/block}>
+<{block name=footer}>
 <div class="footer">
     <div class="row footer-bottom">
         <ul class="list-inline text-center">
@@ -80,7 +79,8 @@
     </div>
 </div>
 <div class="modal fade" id="commonModal" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="commonModalLabel"></div>
-<script type="text/javascript" src="<{$BASE_URI}>/public/js/comm.js"></script>
+<script type="text/javascript" src="/js/comm.js"></script>
+<{/block}>
 <{block name=js}><{/block}>
 </body>
 </html>
