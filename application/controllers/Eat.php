@@ -13,10 +13,16 @@ class EatController extends BaseController {
 
     public $default_owner = ['小健健','小斌斌','小敏敏','小文文','小昆昆','小楠楠','小灰灰'];
     public $owner;
+    public $uuid;
 
     public function init() {
-        $ua = $_SERVER['HTTP_USER_AGENT'];
-        $this->owner = (new DbModel('eat_owner'))->getRow('SELECT id,name FROM eat_owner WHERE ua_hash=?', [md5($ua)]);
+        if (!isset($_COOKIE['uuid'])) {
+            $this->uuid = md5(uniqid(time()));
+            setcookie('uuid', $this->uuid, time()+365*86400);
+        } else {
+            $this->uuid = $_COOKIE['uuid'];
+        }
+        $this->owner = (new DbModel('eat_owner'))->getRow('SELECT id,name FROM eat_owner WHERE ua_hash=?', [$this->uuid]);
     }
 
     public function indexAction() {
@@ -67,7 +73,7 @@ class EatController extends BaseController {
         }
         $id = $model->insert('eat_owner', [
             'name' => $owner,
-            'ua_hash' => md5($_SERVER['HTTP_USER_AGENT'])
+            'ua_hash' => $this->uuid
         ]);
         Fn::ajaxSuccess(['id'=>$id,'name'=>$owner]);
     }
