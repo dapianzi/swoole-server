@@ -1,0 +1,216 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>吃什么呀^_^</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <!--<link rel="icon" type="image/png" href="/imgs/favicon.png">-->
+    <!-- static files -->
+    <link rel="stylesheet" href="https://res.wx.qq.com/open/libs/weui/1.1.2/weui.min.css">
+    <script type="text/javascript" src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/libs/weuijs/1.1.3/weui.min.js"></script>
+    <style type="text/css">
+        html,body{height: 100%;}
+        .header{
+            font-size: 20px;
+            height: 50px;
+            line-height: 50px;
+            color: #FFFFFF;
+            text-align: center;
+            background-color: #2b2b2b;
+        }
+        .weui-cell {
+            font-size: 14px;
+        }
+        .weui-cell__hd{
+            width: 80px;
+            display: inline-block;
+        }
+        .weui-progress{
+            margin-left: 10px; margin-right: 10px;
+        }
+        .weui-progress__bar{
+            height: 16px;
+        }
+        <{foreach ['#dd6b66','#759aa0','#e69d87','#8dc1a9','#ea7e53','#eedd78','#73a373','#73b9bc','#7289ab', '#91ca8c','#f49f42'] as $i=>$c}>
+        .weui-cell:nth-child(<{$i+2}>) .weui-progress__inner-bar{
+            background-color: <{$c}>;
+        }
+        <{/foreach}>
+    </style>
+</head>
+<body>
+
+<div class="page__bd" style="height: 100%">
+    <div class="header"><span id="nickname"><{if isset($owner['name'])}><{$owner.name}>，<{/if}></span><{$af}>吃什么啊啊啊啊!!</div>
+    <div class="weui-tab" id="tab">
+        <div class="weui-cells">
+            <div class="weui-cell">
+                <div class="weui-cell__bd">
+                    <div class="weui-flex">
+                        <div class="weui-flex__item" style="text-align: center">
+                            <a id="myChoice" class="weui-btn weui-btn_mini weui-btn_primary">我来选</a>
+                        </div>
+                        <div class="weui-flex__item" style="text-align: center">
+                            <a id="randChoice" class="weui-btn weui-btn_mini weui-btn_warn">随机吧</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <{foreach $choices as $choice=>$num}>
+            <div class="weui-cell" data-num="<{$num}>" data-choice="<{$choice}>">
+                <div class="weui-cell__hd"><{$choice}></div>
+                <div class="weui-cell__bd">
+                    <div class="weui-progress">
+                        <div class="weui-progress__bar">
+                            <div class="weui-progress__inner-bar js_progress" style="width:<{$num*14}>%;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="weui-cell__ft"><a href="javascript:;" class="weui-btn weui-btn_mini weui-btn_default">+1</a></div>
+            </div>
+            <{/foreach}>
+        </div>
+        <div class="weui-loadmore weui-loadmore_line">
+            <span class="weui-loadmore__tips"><{$tips}></span>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function(){
+    var owner = <{$owner|json_encode}>;
+    var choice = <{$choices|json_encode}>;
+    var restaurant = <{$restaurant|json_encode}>;
+    var default_owners = <{$default_owner|json_encode}>;
+    var isChoice = <{$isChoice}>;
+    function ajax(url, data, ok_call) {
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: data,
+            dataType: 'JSON',
+            success: function(res){
+                res = $.parseJSON(res);
+                console.log(res.status);
+                if (res.status == 0) {
+                    ok_call && ok_call(res);
+                } else {
+                    weui.alert(res.content);
+                }
+            },
+            error: function(err){
+                weui.toast('服务器开小差了..');
+            }
+        });
+    }
+    function disableBtn() {
+        $('.weui-btn').addClass('weui-btn_disabled');
+    }
+
+    function randChoice() {
+        var len = choiceOpts.length;
+        return choiceOpts[Math.floor(Math.random()*len)].value;
+    }
+    function myChoice(c) {
+        if (isChoice) {return false;}
+        ajax('/eat/choice/', {"choice": c}, function(res) {
+            var ch = res.content;
+            var $ch = $('.weui-cell[data-choice="'+ch.restaurant+'"]');
+            if ($ch.length > 0) {
+                var num = 1 + $ch.data('num');
+                $ch.data('num', num);
+                $ch.find('.weui-progress__inner-bar').css({width: num*14+'%'});
+            } else {
+                var cell = '<div class="weui-cell" data-num="1" data-choice="' + ch.restaurant + '">' +
+                    '                <div class="weui-cell__hd">' + ch.restaurant + '</div>' +
+                    '                <div class="weui-cell__bd">' +
+                    '                    <div class="weui-progress">' +
+                    '                        <div class="weui-progress__bar">' +
+                    '                            <div class="weui-progress__inner-bar js_progress" style="width:14%;"></div>' +
+                    '                        </div>' +
+                    '                    </div>' +
+                    '                </div>' +
+                    '                <div class="weui-cell__ft"><a href="javascript:;" class="weui-btn weui-btn_mini weui-btn_default">+1</a></div>' +
+                    '            </div>';
+                $('.weui-cells').append(cell);
+            }
+            isChoice = true;
+            disableBtn();
+        })
+    }
+    if (isChoice) {
+        disableBtn();
+    }
+    if (!owner) {
+        var pickOpts = [
+            {
+                label: '选择一个代号',
+                value: '-1'
+            }
+        ];
+        var selected = '-1';
+        for (var i in default_owners) {
+            pickOpts.push({
+                label: default_owners[i],
+                value: default_owners[i]
+            });
+        }
+        weui.picker(pickOpts, {
+            id: 'owner',
+            defaultValue: ['-1'],
+            onClose: function() {
+                ajax('/eat/owner/', {owner: selected}, function(res){
+                    owner = res.content;
+                    $('#nickname').html(owner.name + '，');
+                });
+            },
+            onConfirm: function(res) {
+                selected = res[0].value;
+            },
+            onChange: function(res) {
+                selected = res[0].value;
+            }
+        });
+    }
+    var choiceOpts = [];
+    for (var i in restaurant) {
+        choiceOpts.push({
+            label: restaurant[i],
+            value: restaurant[i]
+        });
+    }
+    $('#myChoice').on('click', function(){
+        if (isChoice) {return false}
+        var cho = '';
+        weui.picker(choiceOpts, {
+            id: 'restaurant',
+            onChange: function(res) {
+                cho = res[0].value;
+            },
+            onConfirm: function(res) {
+                myChoice(res[0].value);
+            },
+            onClose: function() {
+
+            }
+        })
+    });
+    $('#randChoice').on('click', function() {
+        var c = randChoice();
+        weui.alert('您刚刚随机点了 '+ c, function() {
+            myChoice(c);
+        });
+    });
+    $('.weui-cells').on('click', '.weui-btn_default', function(){
+        var $ch = $(this).parents('.weui-cell');
+        myChoice($ch.data('choice'));
+    });
+});
+</script>
+</body>
+</html>

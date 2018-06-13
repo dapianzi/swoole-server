@@ -14,12 +14,13 @@ class DbModel extends DbClass
     // primary key
     protected $pk = 'id';
 
-    public function __construct() {
+    public function __construct($tableName = '') {
         $confName = $this->conf;
         $conf = Yaf_Application::app()->getConfig()->$confName;
         parent::__construct($conf->dsn, $conf->username, $conf->password);
 
         //todo: auto fix table name
+        $this->table = $tableName;
         if (empty($this->table)) {
             $this->table = strtolower(str_replace('Model', '', get_class($this)));
         }
