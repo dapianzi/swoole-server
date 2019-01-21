@@ -16,4 +16,60 @@ class IndexController extends BaseController {
         return FALSE;
     }
 
+    public function postAction() {
+        $aa = $this->getQuery('aa', '');
+
+
+        $res = [
+            'swoole_version' => SWOOLE_VERSION,
+            'bb' => $this->getPost('bb', ''),
+            'files' => gf_get_files(),
+        ];
+        if ($aa == 'ajax') {
+            $in = [];
+            $begin = 1025;
+            $now = time();
+            $i = 0;
+            while ($begin <= 1314) {
+//                $begin += $this->fib($i);
+                $in[date('Y-m-d', $now)] = $begin;
+                $begin += $this->add($i);
+//                $begin += $this->mul($i);
+                $i++;
+                $now += 86400;
+            }
+            $res['line'] = $in;
+            gf_ajax_success($res);
+            return FALSE;
+        } else if ($aa == 'post') {
+            $this->getView()->assign('result', $res);
+        }
+        $this->getView()->assign('result', $res);
+    }
+
+    private function fib($i) {
+        if ($i==0) {return 1;}
+        else if ($i==1) {return 1;}
+        else {return $this->fib($i-1) + $this->fib($i-2);}
+    }
+
+    private function add($i) {
+        return $i*2+1;
+    }
+
+    private function mul($i) {
+        return 2<<$i;
+    }
+
+
+
+    public function sleepAction() {
+        sleep(2);
+        echo date('H:i:s');
+        return FALSE;
+    }
 }
+
+$f = fopen('index.log', 'a+');
+fwrite($f, '['.date('Y-m-d H:i:s').'] read fn.php'."\n");
+fclose($f);

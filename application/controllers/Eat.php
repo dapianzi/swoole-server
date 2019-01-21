@@ -16,11 +16,11 @@ class EatController extends BaseController {
     public $uuid;
 
     public function init() {
-        if (!isset($_COOKIE['uuid'])) {
+        if (!isset(Yaf_Registry::get('swoole_req')->cookie['uuid'])) {
             $this->uuid = md5(uniqid(time()));
-            setcookie('uuid', $this->uuid, time()+365*86400);
+            Yaf_Registry::get('swoole_res')->cookie('uuid', $this->uuid, time()+365*86400);
         } else {
-            $this->uuid = $_COOKIE['uuid'];
+            $this->uuid = Yaf_Registry::get('swoole_req')->cookie['uuid'];
         }
         $this->owner = (new DbModel('eat_owner'))->getRow('SELECT id,name FROM eat_owner WHERE ua_hash=?', [$this->uuid]);
     }
@@ -66,7 +66,7 @@ class EatController extends BaseController {
         $owner = $this->getPost('owner');
         $model = new DbModel('eat_owner');
         if ($this->owner) {
-            Fn::ajaxSuccess('已经设置过名字啦');
+            gf_ajax_error('已经设置过名字啦');return FALSE;
         }
         if ($owner == '-1') {
             $owner = $this->default_owner[rand(0, count($this->default_owner)-1)];
@@ -75,7 +75,8 @@ class EatController extends BaseController {
             'name' => $owner,
             'ua_hash' => $this->uuid
         ]);
-        Fn::ajaxSuccess(['id'=>$id,'name'=>$owner]);
+        gf_ajax_success(['id'=>$id,'name'=>$owner]);
+        return FALSE;
     }
 
     public function choiceAction() {
@@ -87,7 +88,8 @@ class EatController extends BaseController {
             'owner' => $owner,
             'restaurant' => $choice
         ]);
-        Fn::ajaxSuccess(['id'=>$owner, 'name' => $this->owner['name'], 'restaurant' => $choice]);
+        gf_ajax_success(['id'=>$owner, 'name' => $this->owner['name'], 'restaurant' => $choice]);
+        return FALSE;
     }
 
 }

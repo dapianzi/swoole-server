@@ -24,7 +24,7 @@ class ErrorController extends Yaf_Controller_Abstract {
 
 			case BASE_EXCEPTION:
 			{
-				header("HTTP/1.1 403 Forbidden");
+                Yaf_Registry::get('swoole_res')->status(403);
 				$error['info'] = '403 Forbidden';
 				break;
 			}
@@ -36,15 +36,15 @@ class ErrorController extends Yaf_Controller_Abstract {
 			{
 				//404
                 //header("HTTP/1.1 503 Server Error.");
-				header("HTTP/1.1 404 Not Found");
+                Yaf_Registry::get('swoole_res')->status(404);
 				$error['info'] = '404 Not Found';
 				break;
 			}
 		}
 		if ($this->getRequest()->isXmlHttpRequest()) {
-			Fn::ajaxError($error);
+			gf_ajax_error($error);return FALSE;
 		}
 		$this->getView()->assign('err', $error);
-		//return false;
+		return false;
 	}
 }
