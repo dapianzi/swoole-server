@@ -19,7 +19,7 @@ class WebServer {
 
     public function __construct()
     {
-        $this->server = new Swoole\Http\Server("0.0.0.0", 9501);
+        $this->server = new Swoole\Http\Server("0.0.0.0", 9555);
         $this->server->set(array(
             'worker_num' => 4,
             'task_worker_num' => 16,
@@ -55,8 +55,8 @@ class WebServer {
     public function onWorkerStart($serv, $worknum) {
         var_dump(get_included_files());
         cli_set_process_title('swoole_worker_'.$worknum);
-        Yaf_Registry::set('swoole_serv', $serv);
-        $this->app = new Yaf_Application( APPLICATION_PATH . "conf/application.ini");
+        Yaf\Registry::set('swoole_serv', $serv);
+        $this->app = new Yaf\Application( APPLICATION_PATH . "conf/application.ini");
         $this->app->bootstrap();
     }
 
@@ -79,16 +79,17 @@ class WebServer {
         $uri = $request->server['request_uri'];
         printf("[%s]get %s\n", date('Y-m-d H:i:s'), $uri);
         if ($uri == '/favicon.ico') {
-            $request->status(404);
-            $request->end();
+            $response->status(404);
+            $response->end();
+        } else {
+            Yaf\Registry::set('swoole_req', $request);
+            Yaf\Registry::set('swoole_res', $response);
+            ob_start();
+            $this->app->getDispatcher()->dispatch(new Yaf\Request\Http($this->rewrite($uri)));
+            $data = ob_get_clean();
+            $response->detach();
+            $this->server->task($response->fd.'____'.$data);
         }
-        Yaf_Registry::set('swoole_req', $request);
-        Yaf_Registry::set('swoole_res', $response);
-        ob_start();
-        $this->app->getDispatcher()->dispatch(new Yaf_Request_Http($this->rewrite($uri)));
-        $data = ob_get_clean();
-        $response->detach();
-        $this->server->task($response->fd.'____'.$data);
     }
 
 

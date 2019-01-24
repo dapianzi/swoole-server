@@ -7,12 +7,23 @@
  * 这些方法, 都接受一个参数:Yaf_Dispatcher $dispatcher
  * 调用的次序, 和申明的次序相同
  */
-class Bootstrap extends Yaf_Bootstrap_Abstract{
+class Bootstrap extends Yaf\Bootstrap_Abstract{
+
+    public function _initLoader() {
+        Yaf\Loader::getInstance()->registerLocalNamespace(['Foo', 'Bar']);
+        Yaf\Loader::getInstance()->registerLocalNamespace('PHPMailer');
+        Yaf\Loader::getInstance()->registerLocalNamespace('Smarty');
+    }
 
     public function _initConfig() {
 		//把配置保存起来
-		$arrConfig = Yaf_Application::app()->getConfig();
-		Yaf_Registry::set('config', $arrConfig);
+		$arrConfig = Yaf\Application::app()->getConfig();
+		Yaf\Registry::set('config', $arrConfig);
+        Event::addListener('test', function($uid, $o) {
+            echo 'Init Config: <br />';
+            echo '    $o->moduleName: '.$o->getModuleName().'<br />';
+            echo '    $o->add(): '.$o->add($uid).'<br />';
+        });
 	}
 
 //	public function _initPlugin(Yaf_Dispatcher $dispatcher) {
@@ -34,16 +45,20 @@ class Bootstrap extends Yaf_Bootstrap_Abstract{
 //	}
 //
 
-	public function _initFunction(Yaf_Dispatcher $dispatcher){
-		Yaf_Loader::import('Fn.php');
+	public function _initFunction(Yaf\Dispatcher $dispatcher){
+		Yaf\Loader::import('Fn.php');
+		Event::addListener('test', function($uid, $o) {
+            echo 'Init Function: <br />';
+            echo '    uid: '.$uid.'<br />';
+        });
 	}
 
-	public function _initSmarty(Yaf_Dispatcher $dispatcher){
-		$smarty = new Smarty_Adapter(null , Yaf_Application::app()->getConfig()->smarty);
+	public function _initSmarty(Yaf\Dispatcher $dispatcher){
+		$smarty = new Smarty_Adapter(null , Yaf\Application::app()->getConfig()->smarty);
 		try {
-			Yaf_Dispatcher::getInstance()->setView($smarty);
+			Yaf\Dispatcher::getInstance()->setView($smarty);
 		} catch (SmartyException $e) {
-			throw new Yaf_Exception_LoadFailed_View($e->getMessage());
+			throw new Yaf\Exception\LoadFailed\View($e->getMessage());
 		}
 	}
 }

@@ -5,7 +5,7 @@
  * @see http://www.php.net/manual/en/yaf-dispatcher.catchexception.php
  * @author KF
  */
-class ErrorController extends Yaf_Controller_Abstract {
+class ErrorController extends Yaf\Controller_Abstract {
 
 	//从2.1开始, errorAction支持直接通过参数获取异常
 //	public function errorAction($exception) {
@@ -20,11 +20,14 @@ class ErrorController extends Yaf_Controller_Abstract {
 			'code' => $exception->getCode(),
 			'message' => $exception->getMessage(),
 		];
+		if (defined('SWOOLE_WS_SERVER')) {
+            throw new Exception('Yaf controller err: '. $exception->getMessage());
+        }
 		switch($exception->getCode()) {
 
 			case BASE_EXCEPTION:
 			{
-                Yaf_Registry::get('swoole_res')->status(403);
+                Yaf\Registry::get('swoole_res')->status(403);
 				$error['info'] = '403 Forbidden';
 				break;
 			}
@@ -36,7 +39,7 @@ class ErrorController extends Yaf_Controller_Abstract {
 			{
 				//404
                 //header("HTTP/1.1 503 Server Error.");
-                Yaf_Registry::get('swoole_res')->status(404);
+                Yaf\Registry::get('swoole_res')->status(404);
 				$error['info'] = '404 Not Found';
 				break;
 			}

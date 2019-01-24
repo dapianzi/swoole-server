@@ -1,0 +1,27 @@
+syntax = "proto3";
+package message.dapianzi;
+
+message RequestLogin {
+    string username = 1;
+    string password = 2;
+    string deviceid = 3;
+    int32 platform = 4;
+}
+
+message ResponseLogin {
+    string token = 2;
+}
+
+message Item {
+    int32 id = 1;
+    string name = 2;
+}
+
+message RequestGetList {
+    string token = 1;
+}
+
+message ResponseGetList {
+    repeated int32 uids = 1;
+    repeated Item items = 2;
+}

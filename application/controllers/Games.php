@@ -5,7 +5,7 @@
  * @since: 2018/5/8 0008 9:53
  */
 
-class GamesController extends Yaf_Controller_Abstract
+class GamesController extends Yaf\Controller_Abstract
 {
 
     public function init() {

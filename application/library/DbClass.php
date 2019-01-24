@@ -38,7 +38,7 @@ class DbClass
         catch (PDOException $e)
         {
             $this->errMessage = "Database connection failed:\n\n" . $e->getMessage();
-            throw new Yaf_Exception($this->errMessage);
+            throw new Yaf\Exception($this->errMessage);
         }
     }
 
@@ -54,7 +54,7 @@ class DbClass
             return $pre;
         } catch (PDOException $e) {
             $this->errMessage = $e->getMessage();
-            throw new Yaf_Exception($this->errMessage);
+            throw new Yaf\Exception($this->errMessage);
         }
     }
 
@@ -73,18 +73,18 @@ class DbClass
         catch (PDOException $e)
         {
             $this->errMessage = $e->getMessage();
-            throw new Yaf_Exception($e);
+            throw new Yaf\Exception($e);
         }
     }
 
     public function update($table, $param, $where, $conjunction = 'AND') {
         if (!count($param)) {
             $this->errMessage = 'delete must have set.';
-            throw new Yaf_Exception('delete must have set.');
+            throw new Yaf\Exception('delete must have set.');
         }
         if (!count($where)) {
             $this->errMessage = 'delete must have where.';
-            throw new Yaf_Exception('delete must have where.');
+            throw new Yaf\Exception('delete must have where.');
         }
         $whereValues = array();
         $sql = " UPDATE $table SET " . $this->makeSetSQL(array_keys($param)) . ' WHERE ' . $this->makeWhereSQL($where, $conjunction, $whereValues);
@@ -95,14 +95,14 @@ class DbClass
             return $pre->rowCount();
         } catch (PDOException $e) {
             $this->errMessage = $e->getMessage();
-            throw new Yaf_Exception($e);
+            throw new Yaf\Exception($e);
         }
     }
 
     public function delete($table, $where, $conjunction = 'AND') {
         if (!count($where)) {
             $this->errMessage = 'delete must have where.';
-            throw new Yaf_Exception('delete must have where.');
+            throw new Yaf\Exception('delete must have where.');
         }
         $whereValues = array();
         $sql = " DELETE FROM $table WHERE " . $this->makeWhereSQL($where, $conjunction, $whereValues);
@@ -113,7 +113,7 @@ class DbClass
             return $pre->rowCount();
         } catch (PDOException $e) {
             $this->errMessage = $e->getMessage();
-            throw new Yaf_Exception($e);
+            throw new Yaf\Exception($e);
         }
     }
 
@@ -156,7 +156,7 @@ class DbClass
 
     public function makeSetSQL($columns) {
         if (! count ($columns))
-            throw new Yaf_Exception ('columns must not be empty');
+            throw new Yaf\Exception ('columns must not be empty');
         $tmp = array();
         // Same syntax works for NULL as well.
         foreach ($columns as $each)
@@ -167,9 +167,9 @@ class DbClass
     public function makeWhereSQL ($where_columns, $conjunction, &$params = array())
     {
         if (! in_array (strtoupper ($conjunction), array ('AND', '&&', 'OR', '||', 'XOR')))
-            throw new Yaf_Exception ('conjunction'. $conjunction. 'invalid operator');
+            throw new Yaf\Exception ('conjunction'. $conjunction. 'invalid operator');
         if (! count ($where_columns))
-            throw new Yaf_Exception ('where_columns must not be empty');
+            throw new Yaf\Exception ('where_columns must not be empty');
         $params = array();
         $tmp = array();
         foreach ($where_columns as $colName => $colValue)
@@ -191,7 +191,7 @@ class DbClass
 
     public function questionMarks($count) {
         if ($count <= 0) {
-            throw new Yaf_Exception('count must be greater than zero');
+            throw new Yaf\Exception('count must be greater than zero');
         }
         return implode(', ', array_fill(0, $count, '?'));
     }

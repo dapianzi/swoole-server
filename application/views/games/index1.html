@@ -1,0 +1,70 @@
+<{extends '../base.html'}>
+
+<{block name=title}>Hilo Demo<{/block}>
+<{block name=nav}><{/block}>
+<{block name=footer}><{/block}>
+<{block name=title}>
+<style type="text/css">
+body{background-color: #EEEEEE;}
+.container{
+    margin-left:auto; margin-right: auto;
+    box-shadow: 0px 0px 5px 0px #2b2b2b;
+}
+
+</style>
+<{/block}>
+
+<{block name=content}>
+<div id="container" class="container"></div>
+<{/block}>
+
+<{block name=js}>
+<script type="text/javascript" src="/js/hilo/hilo-standalone.min.js"></script>
+<!--<script type="text/javascript" src="/js/game/flappybird/Asset.js"></script>-->
+<!--<script type="text/javascript" src="/js/game/flappybird/.js"></script>-->
+<!--<script type="text/javascript" src="/js/game/flappybird/.js"></script>-->
+<!--<script type="text/javascript" src="/js/game/flappybird/.js"></script>-->
+<!--<script type="text/javascript" src="/js/game/flappybird/.js"></script>-->
+<!--<script type="text/javascript" src="/js/game/flappybird/game.js"></script>-->
+<script type="text/javascript">
+(function() {
+    let stage = new Hilo.Stage({
+        mixes: Hilo.EventMixin,
+        renderType: 'canvas',
+        container: document.getElementById('container'),
+        width: 320,
+        height: 480,
+    });
+    stage.on('fun', function() {
+        console.log('bazinga');
+    });
+    let ticker = new Hilo.Ticker(24);
+    ticker.addTick(stage);
+    ticker.start();
+    let birdAtlas = new Hilo.TextureAtlas({
+        // 图集资源
+        image: '/img/flappy-bird/bird.png',
+        // 帧定义
+        frames: [
+            [0, 120, 86, 60],
+            [0, 60, 86, 60],
+            [0, 0, 86, 60]
+        ],
+        // 精灵图顺序
+        sprites: {
+            bird: [0, 1, 2]
+        }
+    });
+    let bird = new Hilo.Sprite({
+        id: 'bird',
+    });
+    bird.addFrame(birdAtlas.getSprite('bird')).addTo(stage);
+    stage.enableDOMEvent(Hilo.event.POINTER_MOVE, true);
+    bird.on(Hilo.event.POINTER_MOVE, function(e){
+        stage.fire('fun');
+        console.log(e.eventTarget, e.stageX, e.stageY);
+    });
+    // let icon = new Hilo.
+})();
+</script>
+<{/block}>

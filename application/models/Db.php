@@ -16,7 +16,7 @@ class DbModel extends DbClass
 
     public function __construct($tableName = '') {
         $confName = $this->conf;
-        $conf = Yaf_Application::app()->getConfig()->$confName;
+        $conf = Yaf\Application::app()->getConfig()->$confName;
         parent::__construct($conf->dsn, $conf->username, $conf->password);
 
         //todo: auto fix table name

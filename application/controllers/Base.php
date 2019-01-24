@@ -7,7 +7,7 @@
  * Created by PhpStorm.
  */
 
-class BaseController extends Yaf_Controller_Abstract
+class BaseController extends Yaf\Controller_Abstract
 {
     protected $user = null;
     protected $base_uri = '';
@@ -17,7 +17,7 @@ class BaseController extends Yaf_Controller_Abstract
 
     public function init() {
         // inti config
-        $conf = Yaf_Application::app()->getConfig();
+        $conf = Yaf\Application::app()->getConfig();
         $this->base_uri = $conf->application->baseUri;
         $this->getView()->assign('BASE_URI', $this->base_uri);
 

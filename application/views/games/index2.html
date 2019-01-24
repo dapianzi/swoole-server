@@ -1,0 +1,319 @@
+<{extends '../base.html'}>
+
+<{block name=title}>Hilo Demo<{/block}>
+<{block name=nav}><{/block}>
+<{block name=footer}><{/block}>
+<{block name=static}>
+<style type="text/css">
+body{background-color: #EEEEEE;}
+.container{
+    width: 640px;
+    height: 480px;
+    background: #2b2b2b;
+    padding:0; margin:0;
+}
+.container:after{
+    content: '';display: block; width: 100%;height: 0; clear: both;
+}
+
+</style>
+<{/block}>
+
+<{block name=content}>
+<div id="container" class="container"></div>
+<img src="/img/demo/fire.png" id="texture" style="display: none;" />
+<{/block}>
+
+<{block name=js}>
+<script type="text/javascript" src="/js/hilo/hilo-standalone.min.js"></script>
+<script type="text/javascript">
+(function() {
+    // 粒子特效 sample
+    let ParticleSystem = (function(){
+        const props = ['x', 'y', 'vx', 'vy', 'ax', 'ay', 'rotation', 'rotationV', 'scale', 'scaleV', 'alpha', 'alphaV', 'life'];
+        let PROPS = [];
+        for (let p of props) {
+            PROPS.push(p);
+            PROPS.push(p + 'Var');
+        }
+
+        let PROPS_DEFAULT = {
+            x: 0,
+            y: 0,
+            vx: 0,
+            vy: 0,
+            ax: 0,
+            ay: 3,
+            scale: 1,
+            scaleV: 0,
+            alpha: 1,
+            alphaV: 0,
+            rotation: 0,
+            rotationV: 0,
+            life: 1,
+        }
+
+        let diedParticles = [];
+
+        let ParticleSystem = Hilo.Class.create({
+            Extends: Hilo.Container,
+            constructor: function(properties) {
+                // 粒子系统id
+                this.id = this.id || properties.id || Hilo.getUid('ParticleSystem');
+                // 发射点坐标
+                this.emitterX = 0;
+                this.emitterY = 0;
+                // 粒子重力加速度
+                this.gx = 0;
+                this.gy = 750;
+                // 系统总运行时间
+                this.totalTime = Infinity;
+                // 发射粒子数，数量变化
+                this.emitNum = 10;
+                this.emitNumVar = 0;
+                // 粒子运行时间，时间变化
+                this.emitTime = 0;
+                this.emitTimeVar = 0;
+
+                this.particle = {};
+
+                // this.on('stop', this.onStop).bind(this);
+
+                ParticleSystem.superclass.constructor.call(this, properties);
+                //
+                this.reset(properties);
+            },
+            onStop: function() {
+                console.log('ParticleSystem['+ this.id +'] totalRunTime: ' + this._totalRunTime);
+            },
+            // why???
+            Statics: {
+                PROPS, // PROPS: PROPS,
+                PROPS_DEFAULT,
+                diedParticles
+            },
+            reset: function(cfg) {
+                Hilo.util.copy(this, cfg);
+                this.particle.system = this;
+                if (this.totalTime <= 0) {
+                    this.totalTime = Infinity;
+                }
+            },
+            // extends from Hilo.View
+            // @param int dt microseconds
+            onUpdate: function(dt) {
+                dt *= 0.001; // '*' better than '/'
+                if (this._isRun) {
+                    this._totalRunTime += dt;
+                    this._currentRunTime += dt;
+                    // reset emitter
+                    if (this._currentRunTime >= this._emitTime) {
+                        this.onStop();
+                        this._currentRunTime = 0;
+                        this._emitTime = getRandomValue(this.emitTime, this.emitTimeVar);
+                        this._emit();
+                    }
+                }
+            },
+            // emit particles
+            _emit: function() {
+                let num = getRandomValue(this.emitNum, this.emitNumVar);
+                for (let i = 0; i < num; i++) {
+                    // 继承自 Container
+                    this.addChild(Particle.create(this.particle));
+                }
+            },
+            start: function() {
+                this.stop(true);
+                this._currentRunTime = 0;
+                this._totalRunTime = 0;
+                this._isRun = true;
+                this._emitTime = getRandomValue(this.emitTime, this.emitTimeVar);
+            },
+            stop: function(clear) {
+                this._isRun = false;
+                if (clear) {
+                    // this.children 继承自 Container
+                    for (let i = this.children.length-1; i>=0; i--) {
+                        this.getChildAt(i).destroy();
+                    }
+                } else {
+                    this.onStop();
+                }
+            }
+        });
+        let Particle = Hilo.Class.create({
+            Extends: Hilo.View,
+            constructor: function(properties) {
+                // this.id ?? -- 从dead粒子中创建
+                this.id = this.id || properties.id || Hilo.getUid('Particle');
+                Particle.superclass.constructor.call(this, properties);
+                this.init(properties);
+            },
+            // 继承自View
+            onUpdate: function(dt) {
+                dt *= 0.001;
+                if (this._died) {
+                    return false;
+                }
+                // 实际加速度，需要加上父容器的加速度
+                let ax = this.ax + this.system.gx;
+                let ay = this.ay + this.system.gy;
+                // 根据实际加速度计算当前速度,更新位置
+                this.vx += ax * dt;
+                this.vy += ay * dt;
+                this.x += this.vx * dt;
+                this.y += this.vy * dt;
+                // 更新旋转角度
+                this.rotation += this.rotationV;
+                // 从100ms开始透明度变化
+                if (this._time > 0.1) {
+                    this.alpha += this.alphaV;
+                }
+                // 更新缩放
+                this.scale += this.scaleV;
+                this.scaleX = this.scaleY = this.scale;
+                // 更新存在时长
+                this._time += dt;
+                // 超过生命周期或者透明不可见，销毁当前粒子
+                if (this.time >= this.life || this.alpha <= 0) {
+                    this.destroy();
+                    console.log('Particle['+ this.id +'] life time: ' + this._time);
+                    return false;
+                }
+            },
+            setImage: function(img, frame) {
+                this.drawable = this.drawable || new Hilo.Drawable();
+                frame = frame || [0, 0, img.width, img.height];
+                this.width = frame[2];
+                this.height = frame[3];
+                this.drawable.rect = frame;
+                this.drawable.image = img;
+            },
+            destroy: function() {
+                this._died = true;
+                this.alpha = 0;
+                // 继承自 View
+                this.removeFromParent();
+                diedParticles.push(this);
+            },
+            init: function(cfg) {
+                this.system = cfg.system;
+                this._died = false;
+                this._time = 0;
+                this.alpha = 1;
+                for (let i=0,l=PROPS.length; i<l; i++) {
+                    let p = PROPS[i];
+                    let v = cfg[p] === undefined ? PROPS_DEFAULT[p] : cfg[p];
+                    // ???
+                    this[p] = getRandomValue(v, cfg[p + 'Var']);
+                }
+                // 相对于发射器的位置
+                this.x += this.system.emitterX;
+                this.y += this.system.emitterY;
+                //
+                if (cfg.image) {
+                    let frame = cfg.frame;
+                    if (frame && frame[0].length) {
+                        // >> get intVal
+                        frame = frame[(Math.random()*frame.length) >> 0];
+                    }
+                    this.setImage(cfg.image, frame);
+                    if (cfg.pivotX !== undefined) {
+                        this.pivotX = cfg.pivotX * frame[2];
+                    }
+                    if (cfg.pivotY !== undefined) {
+                        this.pivotY = cfg.pivotY * frame[3];
+                    }
+                }
+            },
+            // static method
+            // @see Hilo.Class
+            Statics: {
+                create: function(cfg) {
+                    if (diedParticles.length > 0) {
+                        let particle = diedParticles.pop();
+                        particle.init(cfg);
+                        return particle;
+                    } else {
+                        return new Particle(cfg);
+                    }
+                }
+            }
+        });
+        function getRandomValue (value, variances) {
+            return variances ? value + (Math.random()-0.5)*2*variances : value;
+        }
+        return ParticleSystem;
+    })();
+    // init stage
+    let stage = new Hilo.Stage({
+        renderType: 'canvas',
+        container: document.getElementById('container'),
+        width: 640,
+        height: 480
+    });
+
+    let ticker = new Hilo.Ticker(60);
+    ticker.addTick(stage);
+    // ??
+    ticker.addTick(Hilo.Tween);
+    ticker.start();
+
+    let img = document.getElementById('texture');
+    let particleSystem = new ParticleSystem({
+        x: 0, y: 0, emitNum: 50, emitTime: 1, particle: {
+            frame: [[75, 236, 7, 11],
+                [119, 223, 7, 17],
+                [90, 223, 22, 17],
+                [51, 202, 17, 46],
+                [94, 59, 34, 59],
+                [60, 160, 34, 42],
+                [30, 99, 30, 99],
+                [7, 240, 7, 11],
+                [119, 206, 7, 17],
+                [90, 206, 22, 17],
+                [111, 160, 17, 46],
+                [60, 59, 34, 59],
+                [94, 118, 34, 42],
+                [30, 0, 30, 99],
+                [68, 236, 7, 11],
+                [112, 223, 7, 17],
+                [68, 219, 22, 17],
+                [94, 160, 17, 46],
+                [94, 0, 34, 59],
+                [60, 118, 34, 42],
+                [0, 99, 30, 99],
+                [0, 240, 7, 11],
+                [112, 206, 7, 17],
+                [68, 202, 22, 17],
+                [34, 198, 17, 46],
+                [60, 0, 34, 59],
+                [0, 198, 34, 42],
+                [0, 0, 30, 99]
+            ],
+            image: img,
+            life: 22,
+            alphaV: -0.02,
+            vxVar: 300,
+            vyVar: 300,
+            axVar: 200,
+            ayVar: 0,
+            scale: 0.5,
+            rotationVar: 360,
+            rotationVVar: 4,
+            pivotX: 0.5,
+            pivotY: 0.5,
+        }
+    });
+    stage.addChild(particleSystem);
+    particleSystem.start();
+    ticker.addTick({
+        tick: function() {
+            particleSystem.emitterX = Math.random() * 640;
+            particleSystem.emitterY = Math.random() * 480;
+        }
+    });
+})();
+</script>
+<{/block}>

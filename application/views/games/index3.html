@@ -1,0 +1,75 @@
+<{extends '../base.html'}>
+
+<{block name=title}>Hilo Demo - HitTestPoint<{/block}>
+<{block name=nav}><{/block}>
+<{block name=footer}><{/block}>
+<{block name=static}>
+<style type="text/css">
+    body{background-color: #EEEEEE;}
+    .container{
+        width: 640px;
+        height: 480px;
+        background: #2b2b2b;
+        padding:0; margin:0;
+    }
+    .container:after{
+        content: '';display: block; width: 100%;height: 0; clear: both;
+    }
+
+</style>
+<{/block}>
+
+<{block name=content}>
+<h2>Hilo -- Hit test point</h2>
+<div id="container" class="container"></div>
+<img src="/img/demo/fire.png" id="texture" style="display: none;" />
+<{/block}>
+
+<{block name=js}>
+<script type="text/javascript" src="/js/hilo/hilo-standalone.min.js"></script>
+<script type="text/javascript">
+    (function() {
+        let stage = new Hilo.Stage({
+            renderType: 'canvas',
+            container: document.getElementById('container'),
+            width: 640,
+            height: 480,
+        });
+        let ticker = new Hilo.Ticker(60);
+        ticker.addTick(stage);
+        ticker.start();
+
+        let Triangle = Hilo.Class.create({
+            Extends: Hilo.Container,
+            Mixes: Hilo.EventMixin,
+            constructor: function(properties) {
+                this.id = this.id || properties.id || Hilo.getUid('Triangle');
+                Triangle.superclass.constructor.call(this, properties);
+                this.init(properties);
+            },
+            init: function(cfg) {
+                this.boundarys = [];
+                let _w = cfg.r*1.732, _h = 1;
+                let a = new Hilo.Graphics({
+                    width: _w,
+                    height: _h,
+                    rotation: -45,
+                });
+                a.lineStyle(0, '#FF0000', 0).beginFill('#00FF00').drawRect(0,0,_w,_h).endFill();
+                this.boundarys.push(a);
+                a.addTo(this);
+            }
+        });
+        // gra = Hilo.Class.mix(gra, Hilo.EventMixin);
+        let gra = new Triangle({x:100, y: 100, width: 100, height: 100, r: 50}).addTo(stage);
+        stage.enableDOMEvent(Hilo.event.POINTER_START, true);
+        stage.on(Hilo.event.POINTER_START, function(e) {
+            if (gra.boundarys[0].hitTestPoint(e.stageX, e.stageY, true)) {
+                console.log('hit');
+            } else {
+                console.log(e.stageX, e.stageY);
+            }
+        });
+    })();
+</script>
+<{/block}>

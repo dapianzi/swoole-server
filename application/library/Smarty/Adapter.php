@@ -5,8 +5,8 @@
  * @Since: 2017-11-23 11:45
  * Created by PhpStorm.
  */
-Yaf_Loader::import( "Smarty/Smarty.class.php");   /*基类目录为library*/
-class Smarty_Adapter implements Yaf_View_Interface   /*Smarty_Adapter类为yaf与smarty之间的适配器*/
+Yaf\Loader::import( "Smarty/Smarty.class.php");   /*基类目录为library*/
+class Smarty_Adapter implements Yaf\View_Interface   /*Smarty_Adapter类为yaf与smarty之间的适配器*/
 {
     /**
      * Smarty object

@@ -5,10 +5,10 @@
  * @Since: 2017-11-28 16:32
  * Created by PhpStorm.
  */
-Yaf_Loader::import( "PHPMailer/PHPMailer.php");
-Yaf_Loader::import( "PHPMailer/SMTP.php");
+Yaf\Loader::import( "PHPMailer/PHPMailer.php");
+Yaf\Loader::import( "PHPMailer/SMTP.php");
 
-class PHPMailer_Adapter {
+class Adapter {
 
     //链接qq域名邮箱的服务器地址
     public static $MAIL_HOST = 'smtp.gmail.com';

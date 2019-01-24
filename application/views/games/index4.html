@@ -1,0 +1,109 @@
+<{extends '../base.html'}>
+
+<{block name=title}>Hilo Demo - Hit Test view<{/block}>
+<{block name=nav}><{/block}>
+<{block name=footer}><{/block}>
+<{block name=static}>
+<style type="text/css">
+    body{background-color: #EEEEEE;}
+    .container{
+        width: 640px;
+        height: 480px;
+        background: #2b2b2b;
+        padding:0; margin:0;
+    }
+    .container:after{
+        content: '';display: block; width: 100%;height: 0; clear: both;
+    }
+
+</style>
+<{/block}>
+
+<{block name=content}>
+<h2>Hilo -- Hit test point</h2>
+<div id="container" class="container"></div>
+<img src="/img/demo/fire.png" id="texture" style="display: none;" />
+<{/block}>
+
+<{block name=js}>
+<script type="text/javascript" src="/js/hilo/hilo-standalone.min.js"></script>
+<script type="text/javascript">
+    function formatter(num) {
+        if (num < 16) {
+            return '0' + num.toString(16);
+        }
+        return num.toString(16);
+    }
+    function calColor(points) {
+        let r = 249, g = 38, b = 14;
+        if (points < 100) {
+            r = 123 + Math.floor(1.26*points);
+            g = 198 - Math.floor(1.6*points);
+            b = 82 - Math.floor(points*0.66);
+        }
+        let c = '#' + formatter(r) + formatter(g) + formatter(b);
+        console.log(c);
+        return c;
+    }
+    (function() {
+        let stage = new Hilo.Stage({
+            renderType: 'canvas',
+            container: document.getElementById('container'),
+            width: 640,
+            height: 480,
+        });
+        let ticker = new Hilo.Ticker(60);
+        ticker.addTick(stage);
+        ticker.start();
+
+        let Triangle = Hilo.Class.create({
+            Extends: Hilo.View,
+            Mixes: Hilo.EventMixin,
+            constructor: function(properties) {
+                this.id = this.id || properties.id || Hilo.getUid('Triangle');
+                Triangle.superclass.constructor.call(this, properties);
+                this.init(properties);
+            },
+            init: function(cfg) {
+                this.rad = cfg.rad;
+                this.points = cfg.points;
+                this.pivotX = cfg.width/2;
+                this.pivotY = cfg.height/2;
+                let shape = new Hilo.Graphics({
+                    width: cfg.width,
+                    height: cfg.height,
+                    rotation: cfg.rotation
+                });
+                this.boundsArea = [
+                    {x: cfg.x - cfg.rad*1.732/2, y: cfg.y + cfg.rad/2},
+                    {x: cfg.x, y: cfg.y - cfg.rad},
+                    {x: cfg.x + cfg.rad*1.732/2, y: cfg.y + cfg.rad/2},
+                ];
+                shape.beginFill();
+                let color = calColor(this.points);
+                shape.lineStyle(0, color, 0).beginFill(color).moveTo(
+                    this.boundsArea[0].x, this.boundsArea[0].y
+                ).lineTo(this.boundsArea[1].x, this.boundsArea[1].y).lineTo(this.boundsArea[2].x, this.boundsArea[2].y).endFill();
+                this.mask = shape;
+            },
+            setColor: function() {
+                this.background = calColor(this.points);
+            },
+            onUpdate: function(e) {
+
+            }
+        });
+        // gra = Hilo.Class.mix(gra, Hilo.EventMixin);
+
+        let gra = new Triangle({x:100, y: 100, width:100,height:100, rad: 50, rotation: -45, points: 90}).addTo(stage);
+        stage.enableDOMEvent(Hilo.event.POINTER_START, true);
+        stage.on(Hilo.event.POINTER_START, function(e) {
+            if (gra.hitTestPoint(e.stageX, e.stageY, true)) {
+                console.log('hit');
+            } else {
+                console.log(e.stageX, e.stageY);
+            }
+        });
+    })();
+</script>
+<{/block}>

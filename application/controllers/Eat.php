@@ -16,11 +16,11 @@ class EatController extends BaseController {
     public $uuid;
 
     public function init() {
-        if (!isset(Yaf_Registry::get('swoole_req')->cookie['uuid'])) {
+        if (!isset(Yaf\Registry::get('swoole_req')->cookie['uuid'])) {
             $this->uuid = md5(uniqid(time()));
-            Yaf_Registry::get('swoole_res')->cookie('uuid', $this->uuid, time()+365*86400);
+            Yaf\Registry::get('swoole_res')->cookie('uuid', $this->uuid, time()+365*86400);
         } else {
-            $this->uuid = Yaf_Registry::get('swoole_req')->cookie['uuid'];
+            $this->uuid = Yaf\Registry::get('swoole_req')->cookie['uuid'];
         }
         $this->owner = (new DbModel('eat_owner'))->getRow('SELECT id,name FROM eat_owner WHERE ua_hash=?', [$this->uuid]);
     }

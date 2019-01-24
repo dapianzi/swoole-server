@@ -22,7 +22,7 @@ function gf_ajax_success($data='') {
 }
 
 function gf_ajax_return($status, $content, $code=0) {
-    Yaf_Registry::get('swoole_res')->header('Content-Type', 'application/json; charset=utf-8');
+    Yaf\Registry::get('swoole_res')->header('Content-Type', 'application/json; charset=utf-8');
     echo (json_encode(array(
         'code' => $code,
         'status' => $status,
@@ -121,7 +121,7 @@ function gf_valid_inputs($input, $args) {
 
 function gf_get_query() {
     if (defined('SWOOLE_SERVER')) {
-        return Yaf_Registry::get('swoole_req')->get;
+        return Yaf\Registry::get('swoole_req')->get;
     } else {
         return $_GET;
     }
@@ -129,7 +129,7 @@ function gf_get_query() {
 
 function gf_get_post() {
     if (defined('SWOOLE_SERVER')) {
-        return Yaf_Registry::get('swoole_req')->post;
+        return Yaf\Registry::get('swoole_req')->post;
     } else {
         return $_POST;
     }
@@ -137,7 +137,7 @@ function gf_get_post() {
 
 function gf_get_files() {
     if (defined('SWOOLE_SERVER')) {
-        return Yaf_Registry::get('swoole_req')->files;
+        return Yaf\Registry::get('swoole_req')->files;
     } else {
         return $_FILES;
     }
@@ -145,7 +145,7 @@ function gf_get_files() {
 
 function gf_get_raw() {
     if (defined('SWOOLE_SERVER')) {
-        return Yaf_Registry::get('swoole_req')->rawContent();
+        return Yaf\Registry::get('swoole_req')->rawContent();
     } else {
         try {
             $raw_content = file_get_contents('php://input');
@@ -158,7 +158,7 @@ function gf_get_raw() {
 
 function gf_get_cookie() {
     if (defined('SWOOLE_SERVER')) {
-        return Yaf_Registry::get('swoole_req')->cookie;
+        return Yaf\Registry::get('swoole_req')->cookie;
     } else {
         return $_COOKIE;
     }
@@ -166,7 +166,7 @@ function gf_get_cookie() {
 
 function gf_get_server() {
     if (defined('SWOOLE_SERVER')) {
-        return Yaf_Registry::get('swoole_req')->server;
+        return Yaf\Registry::get('swoole_req')->server;
     } else {
         return $_SERVER;
     }

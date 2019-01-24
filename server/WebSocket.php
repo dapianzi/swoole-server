@@ -19,6 +19,9 @@
 //
 //}
 
+define('SWOOLE_WS_SERVER', TRUE);
+define('BASE_EXCEPTION', 111111);
+define('APPLICATION_PATH', dirname(__FILE__) . '/../');
 
 define('CHAT_INIT',             1);
 define('CHAT_CREATE',           2);
@@ -28,7 +31,7 @@ define('CHAT_MESSAGE',          5);
 define('CHAT_CLOSE',            6);
 
 //init config
-include_once "../application/library/DbClass.php";
+//include_once "../application/library/DbClass.php";
 $conf = parse_ini_file('../conf/application.ini');
 
 /**
@@ -36,21 +39,20 @@ $conf = parse_ini_file('../conf/application.ini');
  */
 class class_swoole_websocket_server {
     private $server;
-    private $db;
+    private $app;
     public static $instance;
 
-    public function __construct($conf)
+    public function __construct()
     {
-        $this->conf = $conf;
-        $this->server = new swoole_websocket_server('0.0.0.0', 1988);
+        $this->server = new Swoole\WebSocket\Server('0.0.0.0', 9502);
         // set run-time params
         $this->server->set(array(
-            'worker_num' => 2,
+            'worker_num' => 4,
             'task_worker_num' => 4,
             'daemonize' => FALSE,
             'backlog' => 128,
-            'max_request' => 10,
-            //'dispatch_mode' => 1,
+            'max_request' => 100,
+//            'dispatch_mode' => 1,
         ));
         $this->start();
     }
@@ -63,22 +65,27 @@ class class_swoole_websocket_server {
     public function onWorkerStart($serv, $worker_id) {
 
         // init redis
-        $redis = new Redis;
-        $redis->connect('127.0.0.1', 6379);
-        $serv->redis = $redis;
+//        $redis = new Redis;
+//        $redis->connect('127.0.0.1', 6379);
+//        $serv->redis = $redis;
         // init db
-        $serv->db = array(
-            'user' => new DbClass($this->conf['user.dsn'], $this->conf['user.username'], $this->conf['user.password']),
-            'app' => new DbClass($this->conf['app.dsn'], $this->conf['app.username'], $this->conf['app.password']),
-        );
+//        $serv->db = array(
+//            'user' => new DbClass($this->conf['user.dsn'], $this->conf['user.username'], $this->conf['user.password']),
+//            'app' => new DbClass($this->conf['app.dsn'], $this->conf['app.username'], $this->conf['app.password']),
+//        );
         //var_dump($serv);
+//        var_dump(get_included_files());
+        cli_set_process_title('swoole_ws_worker_'.$worker_id);
+        Yaf\Registry::set('swoole_ws_serv', $serv);
+        $this->app = new Yaf\Application( APPLICATION_PATH . "conf/application.ini");
+        $this->app->bootstrap();
     }
 
-    public function onStart(swoole_websocket_server $serv) {
-        //print_r($this->db->getAll("SHOW TABLES"));
+    public function onStart(Swoole\WebSocket\Server $serv) {
+        printf ('websocket start..');
     }
 
-    public function onOpen(swoole_websocket_server $serv, $req) {
+    public function onOpen(Swoole\WebSocket\Server $serv, $req) {
         /*
          * object request:
          * fd
@@ -103,109 +110,226 @@ class class_swoole_websocket_server {
 //            }
 //            return 'end ';
 //        });
+//        print_r($req);
+    /*[fd] => 3
+    [header] => Array
+        (
+            [host] => 192.168.1.27:9502
+            [connection] => Upgrade
+        [pragma] => no-cache
+        [cache-control] => no-cache
+        [user-agent] => Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36
+            [upgrade] => websocket
+        [origin] => http://192.168.1.19
+            [sec-websocket-version] => 13
+            [accept-encoding] => gzip, deflate
+        [accept-language] => zh-CN,zh;q=0.9,en;q=0.8
+            [sec-websocket-key] => NYGM1iSMKQeFRT/Cy8+RSg==
+        [sec-websocket-extensions] => permessage-deflate; client_max_window_bits
+        )
+
+    [server] => Array
+        (
+            [request_method] => GET
+            [request_uri] => /
+            [path_info] => /
+            [request_time] => 1548318003
+            [request_time_float] => 1548318004.1135
+            [server_port] => 9502
+            [remote_port] => 55809
+            [remote_addr] => 192.168.1.19
+            [master_time] => 1548318003
+            [server_protocol] => HTTP/1.1
+        )
+
+    [request] =>
+    [cookie] => Array
+        (
+            [uuid] => 1bb30292e2257cd2fddad8a6d8f754dc
+        )
+
+    [get] =>
+    [files] =>
+    [post] =>
+    [tmpfiles] =>
+[fd] => 3
+    [header] => Array
+        (
+            [host] => 192.168.1.27:9502
+            [connection] => Upgrade
+        [pragma] => no-cache
+        [cache-control] => no-cache
+        [user-agent] => Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36
+            [upgrade] => websocket
+        [origin] => http://192.168.1.19
+            [sec-websocket-version] => 13
+            [accept-encoding] => gzip, deflate
+        [accept-language] => zh-CN,zh;q=0.9,en;q=0.8
+            [sec-websocket-key] => NYGM1iSMKQeFRT/Cy8+RSg==
+        [sec-websocket-extensions] => permessage-deflate; client_max_window_bits
+        )
+
+    [server] => Array
+        (
+            [request_method] => GET
+            [request_uri] => /
+            [path_info] => /
+            [request_time] => 1548318003
+            [request_time_float] => 1548318004.1135
+            [server_port] => 9502
+            [remote_port] => 55809
+            [remote_addr] => 192.168.1.19
+            [master_time] => 1548318003
+            [server_protocol] => HTTP/1.1
+        )
+
+    [request] =>
+    [cookie] => Array
+        (
+            [uuid] => 1bb30292e2257cd2fddad8a6d8f754dc
+        )
+
+    [get] =>
+    [files] =>
+    [post] =>
+    [tmpfiles] => */
+
+//        printf("[%s] fd-%d connect to server\n", date('Y-m-d H:i:s'), $req->fd);
     }
 
     public function onMessage(swoole_websocket_server $serv, swoole_websocket_frame $frame) {
-        $data = $this->unpackMsg($frame->data, $frame->opcode);
-        print_r($data);
-        // 聊天主逻辑
-
-        if ($data['type'] == CHAT_INIT) {
-            // check token
-            $data['action'] = 'chat_init';
-            //$serv->task($data);
-            $sql = "SELECT id FROM session WHERE user_id=? AND token=? AND expire_time>unix_timestamp()";
-            $session = $serv->db['user']->getRow($sql, array($data['user_id'], $data['token']));
-            if ($session) {
-                $serv->redis->hSet('user_fd', $data['user_id'], $frame->fd);
+        $msg = new \Message\Message();
+        if ($msg->unpack($frame->data)) {
+            printf("[%s] receive data: %d %s\n", date('Y-m-d H:i:s'), $msg->msg_id, $msg->msg_obj);
+            // dispatcher
+            list($controller, $action) = $this->dispatch($msg->msg_id);
+            try {
+                ob_start();
+                $this->app->getDispatcher()->dispatch(new Yaf\Request\Simple('cli', 'index', $controller, $action, json_decode($msg->msg_obj, TRUE)));
+                $response = ob_get_clean();
+                $code = 0;
+            } catch (Exception $e) {
+                $response = json_encode(['err' => $e->getMessage()]);
+                $code = -1;
+            }
+            print_r($response);
+            if (!$msg->pack($msg->msg_id, $code, $response)) {
+                print_r('msg pack err:'. $msg->err);
             } else {
-                $serv->push($frame->fd, $this->packMsg($data['user_id'], CHAT_CLOSE, 201, 'Invalid token'));
-                $serv->close($frame->fd);
-                return FALSE;
+                $serv->push($frame->fd, $msg->bufString, WEBSOCKET_OPCODE_BINARY);
             }
         } else {
-            // check token
-            $user_fd = $serv->redis->hGet('user_fd', $data['user_id']);
-            if (!$user_fd) {
-                $serv->push($frame->fd, $this->packMsg($data['user_id'], CHAT_CLOSE, 201, 'Invalid user'));
-                $serv->close($user_fd['fd']);
-                return FALSE;
-            }
-            switch ($data['type']) {
-
-                case CHAT_CREATE:
-                    $user_id = $data['user_id'];
-                    $this->server->task(array(
-                        'fd' => $frame->fd,
-                        'action' => 'create_chat',
-                        'user_id' => $user_id,
-                        'users' => array($user_id, $data['chat_user']),
-                    ));
-                    $this->server->push($frame->fd, $this->packMsg($user_id, CHAT_MESSAGE, 300, 'ok'));
-                    break;
-                case CHAT_ADDUSER:
-                    // 加入群聊
-                    $chat_id = $data['chat_id'];
-                    $user_append = $data['user_append'];
-                    // update redis chat group
-                    $group_user = json_decode($serv->redis->hGet('chat_group', $chat_id), TRUE);
-                    array_push($group_user['users'], $user_append);
-                    $serv->redis->hSet('chat_group', $chat_id, json_encode($group_user));
-                    // update mysql db
-                    $serv->task(array(
-                        'action' => 'user_append',
-                        'user_id' => $data['user_id'],
-                        'append_user' => $user_append,
-                        'chat_id' => $chat_id,
-                    ));
-                    break;
-                // history message
-                case CHAT_HISTORY:
-                    $user_id = $data['user_id'];
-                    $chat_id = $data['chat_id'];
-                    $messages = $serv->db['app']->query("SELECT * FROM message WHERE send_status=0 AND user_id=? AND chat_id=? ", array($user_id, $chat_id));
-                    $this->server->push($frame->fd, $this->packMsg($user_id, CHAT_HISTORY, 300, $messages));
-                    break;
-                case CHAT_MESSAGE:
-                    // try to send message if user is online
-                    $chat_id = $data['chat_id'];
-                    $chat_info = json_decode($serv->redis->hGet('chat_group', $chat_id), TRUE);
-                    $messages = array();
-                    foreach ($chat_info['users'] as $user) {
-                        if ($user != $data['user_id']) {
-                            $fd = $serv->redis->hGet('user_fd', $user);
-                            $msg_data = array(
-                                'user_id' => $data['user_id'],
-                                'receive' => $user,
-                                'chat_id' => $data['chat_id'],
-                                'type' => CHAT_MESSAGE,
-                                'content' => $data['content'],
-                                'content_type' => $data['content_type'],
-                            );
-                            if ($fd) {
-                                try {
-                                    $serv->push($fd, json_encode($msg_data));
-                                    $msg_data['status'] = 1;
-                                } catch (Exception $e) {
-                                    $msg_data['status'] = 0;
-                                }
-                            } else {
-                                $msg_data['status'] = 0;
-                            }
-                            array_push($messages, $msg_data);
-                        }
-                    }
-                    $serv->task(array(
-                        'action' => 'save_message',
-                        'user_id' => $data['user_id'],
-                        'messages' => $messages,
-                    ));
-                    break;
-                default:
-                    // discard
-            }
+            printf("[%s] unpack err: %s\n", date('Y-m-d H:i:s'), $frame->data);
+            print_r('msg unpack err:'. $msg->err);
         }
-        print_r($serv->redis->hGetAll('user_fd'));
+
+
+
+        // 聊天主逻辑
+//        if ($data['type'] == CHAT_INIT) {
+//            // check token
+//            $data['action'] = 'chat_init';
+//            //$serv->task($data);
+//            $sql = "SELECT id FROM session WHERE user_id=? AND token=? AND expire_time>unix_timestamp()";
+//            $session = $serv->db['user']->getRow($sql, array($data['user_id'], $data['token']));
+//            if ($session) {
+//                $serv->redis->hSet('user_fd', $data['user_id'], $frame->fd);
+//            } else {
+//                $serv->push($frame->fd, $this->packMsg($data['user_id'], CHAT_CLOSE, 201, 'Invalid token'));
+//                $serv->close($frame->fd);
+//                return FALSE;
+//            }
+//        } else {
+//            // check token
+//            $user_fd = $serv->redis->hGet('user_fd', $data['user_id']);
+//            if (!$user_fd) {
+//                $serv->push($frame->fd, $this->packMsg($data['user_id'], CHAT_CLOSE, 201, 'Invalid user'));
+//                $serv->close($user_fd['fd']);
+//                return FALSE;
+//            }
+//            switch ($data['type']) {
+//
+//                case CHAT_CREATE:
+//                    $user_id = $data['user_id'];
+//                    $this->server->task(array(
+//                        'fd' => $frame->fd,
+//                        'action' => 'create_chat',
+//                        'user_id' => $user_id,
+//                        'users' => array($user_id, $data['chat_user']),
+//                    ));
+//                    $this->server->push($frame->fd, $this->packMsg($user_id, CHAT_MESSAGE, 300, 'ok'));
+//                    break;
+//                case CHAT_ADDUSER:
+//                    // 加入群聊
+//                    $chat_id = $data['chat_id'];
+//                    $user_append = $data['user_append'];
+//                    // update redis chat group
+//                    $group_user = json_decode($serv->redis->hGet('chat_group', $chat_id), TRUE);
+//                    array_push($group_user['users'], $user_append);
+//                    $serv->redis->hSet('chat_group', $chat_id, json_encode($group_user));
+//                    // update mysql db
+//                    $serv->task(array(
+//                        'action' => 'user_append',
+//                        'user_id' => $data['user_id'],
+//                        'append_user' => $user_append,
+//                        'chat_id' => $chat_id,
+//                    ));
+//                    break;
+//                // history message
+//                case CHAT_HISTORY:
+//                    $user_id = $data['user_id'];
+//                    $chat_id = $data['chat_id'];
+//                    $messages = $serv->db['app']->query("SELECT * FROM message WHERE send_status=0 AND user_id=? AND chat_id=? ", array($user_id, $chat_id));
+//                    $this->server->push($frame->fd, $this->packMsg($user_id, CHAT_HISTORY, 300, $messages));
+//                    break;
+//                case CHAT_MESSAGE:
+//                    // try to send message if user is online
+//                    $chat_id = $data['chat_id'];
+//                    $chat_info = json_decode($serv->redis->hGet('chat_group', $chat_id), TRUE);
+//                    $messages = array();
+//                    foreach ($chat_info['users'] as $user) {
+//                        if ($user != $data['user_id']) {
+//                            $fd = $serv->redis->hGet('user_fd', $user);
+//                            $msg_data = array(
+//                                'user_id' => $data['user_id'],
+//                                'receive' => $user,
+//                                'chat_id' => $data['chat_id'],
+//                                'type' => CHAT_MESSAGE,
+//                                'content' => $data['content'],
+//                                'content_type' => $data['content_type'],
+//                            );
+//                            if ($fd) {
+//                                try {
+//                                    $serv->push($fd, json_encode($msg_data));
+//                                    $msg_data['status'] = 1;
+//                                } catch (Exception $e) {
+//                                    $msg_data['status'] = 0;
+//                                }
+//                            } else {
+//                                $msg_data['status'] = 0;
+//                            }
+//                            array_push($messages, $msg_data);
+//                        }
+//                    }
+//                    $serv->task(array(
+//                        'action' => 'save_message',
+//                        'user_id' => $data['user_id'],
+//                        'messages' => $messages,
+//                    ));
+//                    break;
+//                default:
+//                    // discard
+//            }
+//        }
+//        print_r($serv->redis->hGetAll('user_fd'));
+    }
+
+    private function dispatch($msg_id) {
+        $dispatcher = [
+            Request_Login => ['Account', 'Login'],
+            Request_GetList => ['Account', 'List'],
+        ];
+        return $dispatcher[$msg_id];
     }
 
     private function unpackMsg($data, $op) {
@@ -219,7 +343,11 @@ class class_swoole_websocket_server {
                 break;
             case WEBSOCKET_OPCODE_BINARY:
                 // binary message
-                //$this->handleBinary($data);
+                $msg = new \Message\Message();
+                if ($msg->unpack($data)) {
+                    printf("[%s] receive data: %d %s", date('Y-m-d H:i:s'), $msg->msg_id, json_encode($msg->msg_obj));
+                }
+                return $msg;
                 break;
             default:
                 // do nothing
@@ -227,7 +355,9 @@ class class_swoole_websocket_server {
         return $data;
     }
 
-    private function packMsg($uid, $type, $code, $data) {
+    private function packMsg($msg_id, $data) {
+        $msg = new \Message\Message($msg_id, $data);
+        return $msg->pack();
         return json_encode(array(
             'user_id' => $uid,
             'type' => $type,
@@ -237,7 +367,7 @@ class class_swoole_websocket_server {
     }
 
     public function onClose (swoole_websocket_server $serv, $fd){
-        echo "client[$fd] closed\n";
+        printf("[%s] fd-%d closed\n", date('Y-m-d H:i:s'), $fd);
     }
 
     public function onRequest (swoole_http_request $req, swoole_http_response $res) {
@@ -277,7 +407,7 @@ class class_swoole_websocket_server {
                     'type' => 1,
                     'users' => $data['users'],
                 )));
-                $serv->push($data['fd'], $this->packMsg($user_id, CHAT_CREATE, 300, $chat_id));
+                $serv->push($data['fd'], $this->packMsg($user_id, CHAT_CREATE, 300, $chat_id), WEBSOCKET_OPCODE_BINARY);
                 break;
             case 'user_append':
                 $serv->db['app']->insert('chat_group_user', array('group_id'=>$data['chat_id'], 'user_id'=>$data['user_append']));
@@ -323,14 +453,14 @@ class class_swoole_websocket_server {
         $this->server->start();
     }
 
-    static public function getInstance($conf) {
+    static public function getInstance() {
         if (!self::$instance) {
-            self::$instance = new class_swoole_websocket_server($conf);
+            self::$instance = new class_swoole_websocket_server();
         }
         return self::$instance;
     }
 }
 
-class_swoole_websocket_server::getInstance($conf);
+class_swoole_websocket_server::getInstance();
 
 ?>

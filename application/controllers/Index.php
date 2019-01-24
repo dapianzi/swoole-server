@@ -16,6 +16,10 @@ class IndexController extends BaseController {
         return FALSE;
     }
 
+    public function protobufAction() {
+
+    }
+
     public function postAction() {
         $aa = $this->getQuery('aa', '');
 
@@ -53,7 +57,7 @@ class IndexController extends BaseController {
         else {return $this->fib($i-1) + $this->fib($i-2);}
     }
 
-    private function add($i) {
+    public function add($i) {
         return $i*2+1;
     }
 
@@ -63,13 +67,11 @@ class IndexController extends BaseController {
 
 
 
-    public function sleepAction() {
-        sleep(2);
-        echo date('H:i:s');
+    public function testAction() {
+        $o = $this;
+        $uid = $this->getQuery('uid', 0);
+        Event::emit('test', $uid, $o);
+        echo '==============================<br />Event end'.'<br/>';
         return FALSE;
     }
 }
-
-$f = fopen('index.log', 'a+');
-fwrite($f, '['.date('Y-m-d H:i:s').'] read fn.php'."\n");
-fclose($f);

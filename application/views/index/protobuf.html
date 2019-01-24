@@ -1,0 +1,174 @@
+<{extends 'base.html'}>
+
+<{block name=title}>Server test<{/block}>
+
+<{block name=static}>
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+<{/block}>
+
+<{block name=content}>
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space10">
+        <div class="layui-col-sm6">
+            <div class="layui-card">
+                <div class="layui-card-header">Request Message</div>
+                <div class="layui-card-body">
+                    <div class="layui-form">
+                        <div class="layui-form-item">
+                            <div class="layui-inline">
+                                <input name="req_id" id="req_id" class="layui-input" placeholder="request msg id" />
+                            </div>
+                            <div class="layui-inline">
+                                <input name="req_pro" id="req_pro" class="layui-input" placeholder="request msg proto" style="width: 240px;" />
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <textarea style="height: 480px;overflow: auto;" name="request_message" id="request-message" class="layui-textarea"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-sm6">
+            <div class="layui-card">
+                <div class="layui-card-header">Response Message</div>
+                <div class="layui-card-body">
+                    <div class="layui-form">
+                        <div class="layui-form-item">
+                            <div class="layui-inline">
+                                <input name="res_id" id="res_id" class="layui-input" placeholder="response msg id" />
+                            </div>
+                            <div class="layui-inline">
+                                <input name="res_pro" id="res_pro" class="layui-input" placeholder="response msg proto" style="width: 240px;" />
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <pre class="layui-code" style="height: 460px; overflow: auto;" id="response-message" class="layui-textarea"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-row">
+            <select class="layui-select" id="account">
+                <option selected value="王辛巴123">王辛巴</option>
+                <option value="王辛巴123">dapianzi</option>
+            </select>
+            <button class="layui-btn layui-btn" id="send">Test</button>
+            <button class="layui-btn layui-btn-normal" id="reconnect">Reconnect</button>
+        </div>
+    </div>
+</div>
+<{/block}>
+
+<{block name=js}>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script type="text/javascript" src="/js/vendor/protobuf.min.js"></script>
+<script type="text/javascript">
+    var protoRoot = null;
+    var version = 1;
+    protobuf.load('/data/game.proto', function(err, root) {
+        if (err)
+            throw err;
+        protoRoot = root;
+    });
+    function writeBuf(msgid, buf) {
+        var length = buf.length;
+        var buffer = new ArrayBuffer(buf.length + 12);
+        var dv = new DataView(buffer);
+        dv.setUint32(0, version, false);
+        dv.setUint32(4, msgid, false);
+        dv.setUint32(8, length, false);
+        for (let i=0;i<buf.length;i++) {
+            dv.setInt8(12+i, buf[i]);
+        }
+        console.log(version, msgid, length, buffer);
+        return buffer;
+    }
+    function readBuf(buf) {
+        var dv = new DataView(buf);
+        var version = dv.getUint32(0, false);
+        var msgid = dv.getUint32(4, false);
+        var length = dv.getUint32(8, false);
+        var buf = new Uint8Array(buf, 12);
+        return [msgid, buf];
+    }
+    function Request_Message(msg, req, callback) {
+        var RequestMessage = protoRoot.lookupType("dapianzi."+req);
+        var errMsg = RequestMessage.verify(msg);
+        if (errMsg)
+            throw Error(errMsg);
+        var message = RequestMessage.fromObject(msg); // or use .fromObject if conversion is necessary
+        var buffer = RequestMessage.encode(message).finish();
+        callback(buffer);
+    }
+    function Response_Message(buf, res, callback) {
+        var ResponseMessage = protoRoot.lookupType("dapianzi."+res);
+        var message = ResponseMessage.decode(buf);
+        var object = ResponseMessage.toObject(message, {
+            longs: String,
+            enums: String,
+            bytes: String,
+        });
+        callback(object);
+    }
+
+    function start() {
+        var ws_account = new WebSocket("ws://192.168.1.27:9502/");
+        // var ws_account = new WebSocket("ws://192.168.1.229:8083/");
+        ws_account.binaryType = 'arraybuffer';
+        ws_account.onopen = function(evt) {
+            console.log("Connection open ...");
+            Request_Message({
+                username: document.getElementById('account').value,
+                password: '<{'123456'|md5}>',
+                deviceid: 'y9wsptoyhjq4it',
+                platform: 1,
+            }, 'RequestLogin', function(buf) {
+                ws_account.send(writeBuf(100001, buf));
+            });
+        }
+        ws_account.onmessage = function(evt) {
+            var [msgid, buf] = readBuf(evt.data);
+            var res_pro = document.getElementById('res_pro').value;
+            var res_id = parseInt(document.getElementById('res_id').value);
+            // router:
+            switch (msgid) {
+                case 100002:
+                    res_pro = 'ResponseLogin';
+                    break;
+                case 100004:
+                    res_pro = 'ResponseGetList';
+                    break;
+                default:
+                    console.log('Unknow msgid', msgid);
+                    return;
+            }
+            Response_Message(buf, res_pro, function(msg) {
+                console.log(msg);
+                document.getElementById('response-message').innerHTML = JSON.stringify(msg, undefined, 4);
+                hljs.highlightBlock(document.getElementById('response-message'));
+            });
+        }
+        var btn = document.getElementById('send');
+        btn.onclick = function() {
+            var req_msg = document.getElementById('request-message').value;
+            req_msg = JSON.parse(req_msg);
+            console.log(req_msg);
+            var req_pro = document.getElementById('req_pro').value;
+            var req_id = document.getElementById('req_id').value;
+            Request_Message(req_msg, req_pro, function(buf) {
+                ws_account.send(writeBuf(req_id, buf));
+            });
+        };
+    }
+    function _init(token) {
+
+    }
+    var reconbtn = document.getElementById('reconnect');
+    reconbtn.onclick = function() {
+        start();
+    };
+    start();
+</script>
+<{/block}>
